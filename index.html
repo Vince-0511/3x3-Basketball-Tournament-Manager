@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3x3 Tournament Manager</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        header {
+            background: #172554;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 20px;
+            background: #ea580c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #c2410c;
+        }
+
+        .team {
+            padding: 15px;
+            margin-top: 12px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .status {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏀 3x3 Tournament Manager</h1>
+    <p>Men's U25 | 16 January 2027</p>
+</header>
+
+<main>
+
+    <section class="card">
+        <h2>Team Registration</h2>
+
+        <form id="registrationForm">
+
+            <label>Team Name</label>
+            <input type="text" id="teamName"
+                   placeholder="Enter team name" required>
+
+            <label>Captain Name</label>
+            <input type="text" id="captain"
+                   placeholder="Enter captain name" required>
+
+            <label>Player 1</label>
+            <input type="text" id="player1" required>
+
+            <label>Player 2</label>
+            <input type="text" id="player2" required>
+
+            <label>Player 3</label>
+            <input type="text" id="player3" required>
+
+            <label>Player 4</label>
+            <input type="text" id="player4" required>
+
+            <button type="submit">Register Team</button>
+
+        </form>
+
+        <p id="message"></p>
+    </section>
+
+    <section class="card">
+        <h2>Registered Teams</h2>
+
+        <h3 id="teamCount">0 / 24 Teams</h3>
+
+        <div id="teamList"></div>
+    </section>
+
+</main>
+
+<script>
+
+    const MAX_TEAMS = 24;
+
+    let teams = JSON.parse(
+        localStorage.getItem("basketballTeams")
+    ) || [];
+
+    const form = document.getElementById("registrationForm");
+    const message = document.getElementById("message");
+
+    function displayTeams() {
+
+        const teamList = document.getElementById("teamList");
+
+        teamList.innerHTML = "";
+
+        teams.forEach((team, index) => {
+
+            const div = document.createElement("div");
+            div.className = "team";
+
+            const heading = document.createElement("h3");
+            heading.textContent =
+                `${index + 1}. ${team.teamName}`;
+
+            const captain = document.createElement("p");
+            captain.textContent = "Captain: " + team.captain;
+
+            const players = document.createElement("p");
+            players.textContent =
+                "Players: " + team.players.join(", ");
+
+            const status = document.createElement("p");
+            status.className = "status";
+            status.textContent = "Registration received";
+
+            div.append(heading, captain, players, status);
+            teamList.appendChild(div);
+
+        });
+
+        document.getElementById("teamCount").textContent =
+            `${teams.length} / ${MAX_TEAMS} Teams`;
+
+    }
+
+    form.addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+        const teamName =
+            document.getElementById("teamName").value.trim();
+
+        const captain =
+            document.getElementById("captain").value.trim();
+
+        const players = [
+            document.getElementById("player1").value.trim(),
+            document.getElementById("player2").value.trim(),
+            document.getElementById("player3").value.trim(),
+            document.getElementById("player4").value.trim()
+        ];
+
+        if (teams.length >= MAX_TEAMS) {
+            message.textContent = "Registration is full!";
+            return;
+        }
+
+        const duplicate = teams.some(team =>
+            team.teamName.toLowerCase() === teamName.toLowerCase()
+        );
+
+        if (duplicate) {
+            message.textContent = "Team name already exists!";
+            return;
+        }
+
+        if (!teamName || !captain ||
+            players.some(player => !player)) {
+            message.textContent = "Please complete all fields.";
+            return;
+        }
+
+        const newTeam = {
+            teamName: teamName,
+            captain: captain,
+            players: players,
+            status: "PENDING"
+        };
+
+        teams.push(newTeam);
+
+        localStorage.setItem(
+            "basketballTeams",
+            JSON.stringify(teams)
+        );
+
+        message.textContent =
+            "Team registered successfully!";
+
+        form.reset();
+
+        displayTeams();
+
+    });
+
+    displayTeams();
+
+</script>
+
+</body>
+</html>
