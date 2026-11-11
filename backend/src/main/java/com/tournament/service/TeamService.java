@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.tournament.dto.TeamRequest;
 import com.tournament.exception.DuplicateTeamException;
+import com.tournament.exception.TeamCannotBeDeletedException;
 import com.tournament.exception.TeamLimitReachedException;
 import com.tournament.exception.TeamNotFoundException;
 import com.tournament.model.Team;
@@ -74,6 +75,22 @@ public class TeamService {
                 .orElseThrow(() -> new TeamNotFoundException(
                         "Team not found with ID: " + teamId
                 ));
+    }
+
+    public void deleteTeam(Long teamId) {
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new TeamNotFoundException(
+                        "Team not found with ID: " + teamId
+                ));
+
+        if ("APPROVED".equals(team.getStatus())) {
+            throw new TeamCannotBeDeletedException(
+                    "Approved teams cannot be deleted!"
+            );
+        }
+
+        teamRepository.delete(team);
     }
 
 }

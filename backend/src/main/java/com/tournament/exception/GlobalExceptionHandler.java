@@ -61,5 +61,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    @ExceptionHandler(TeamCannotBeDeletedException.class)
+    public ResponseEntity<Map<String, String>> handleTeamCannotBeDeleted(
+            TeamCannotBeDeletedException exception) {
+
+        Map<String, String> response =
+                Map.of("error", exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
 }
 

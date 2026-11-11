@@ -4,6 +4,7 @@ package com.tournament.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,6 +55,11 @@ public class TeamController {
     @GetMapping("/{id}")
     public Team getTeamById(@PathVariable Long id) {
         return teamService.getTeamById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTeam(@PathVariable Long id) {
+        teamService.deleteTeam(id);
     }
 
 }
