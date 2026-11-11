@@ -1,6 +1,5 @@
 
 package com.tournament.exception;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,18 +27,28 @@ public class GlobalExceptionHandler {
     }
 
 
-@ExceptionHandler(MethodArgumentNotValidException.class)
-public ResponseEntity<Map<String, String>> handleValidationErrors(
-        MethodArgumentNotValidException exception) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(
+            MethodArgumentNotValidException exception) {
 
-    Map<String, String> errors = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
 
-    exception.getBindingResult().getFieldErrors().forEach(error ->
-        errors.put(error.getField(), error.getDefaultMessage())
-    );
+        exception.getBindingResult().getFieldErrors().forEach(error ->
+            errors.put(error.getField(), error.getDefaultMessage())
+        );
 
-    return ResponseEntity.badRequest().body(errors);
-}
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(TeamLimitReachedException.class)
+    public ResponseEntity<Map<String, String>> handleTeamLimitReached(
+            TeamLimitReachedException exception) {
+
+        Map<String, String> response =
+                Map.of("error", exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 
 }
 

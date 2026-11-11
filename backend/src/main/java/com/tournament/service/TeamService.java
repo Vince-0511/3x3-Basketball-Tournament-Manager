@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 
 import com.tournament.dto.TeamRequest;
 import com.tournament.exception.DuplicateTeamException;
+import com.tournament.exception.TeamLimitReachedException;
 import com.tournament.model.Team;
 import com.tournament.repository.TeamRepository;
+
 
 @Service
 public class TeamService {
 
+    private static final long MAX_TEAMS = 24;
     private final TeamRepository teamRepository;
 
     public TeamService(TeamRepository teamRepository) {
@@ -21,10 +24,19 @@ public class TeamService {
 
     // Register a new team
     
+
 public Team registerTeam(TeamRequest request) {
+
+    // Check whether the tournament is full
+    if (teamRepository.count() >= MAX_TEAMS) {
+        throw new TeamLimitReachedException(
+            "Tournament is full. Maximum 24 teams allowed!"
+        );
+    }
 
     String teamName = request.getTeamName().trim();
 
+    // Check for duplicate team name
     if (teamRepository.existsByTeamName(teamName)) {
         throw new DuplicateTeamException("Team name already exists!");
     }
@@ -39,6 +51,7 @@ public Team registerTeam(TeamRequest request) {
 
     return teamRepository.save(team);
 }
+
 
 
     // Retrieve all registered teams
