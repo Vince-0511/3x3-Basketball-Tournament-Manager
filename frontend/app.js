@@ -2,13 +2,25 @@ const API_URL = "http://localhost:8080/api/teams";
 const TOURNAMENT_API_URL = "http://localhost:8080/api/tournaments";
 
 // Load teams when the page opens
+
+// Load dashboard data when the page opens
 document.addEventListener("DOMContentLoaded", () => {
     loadTeams();
     loadTournaments();
 
     document.getElementById("tournamentForm")
         .addEventListener("submit", createTournament);
+
+    document.getElementById("groupTournamentSelect")
+        .addEventListener("change", loadGroups);
+
+    document.getElementById("generateGroupsButton")
+        .addEventListener("click", generateGroups);
+
+    document.getElementById("refreshGroupsButton")
+        .addEventListener("click", loadGroups);
 });
+
 
 // Get teams from the backend
 async function loadTeams() {
@@ -217,6 +229,7 @@ async function loadTournaments() {
         const tournaments = await response.json();
 
         displayTournaments(tournaments);
+        populateGroupTournamentSelect(tournaments);
 
     } catch (error) {
         console.error("Error loading tournaments:", error);
@@ -224,6 +237,27 @@ async function loadTournaments() {
         tournamentList.innerHTML = `
             <p>Unable to load tournaments. Please check your backend connection.</p>
         `;
+    }
+}
+
+
+function populateGroupTournamentSelect(tournaments) {
+    const select = document.getElementById("groupTournamentSelect");
+
+    select.innerHTML = '<option value="">Select a tournament</option>';
+
+    tournaments.forEach(tournament => {
+        const option = document.createElement("option");
+
+        option.value = tournament.id;
+        option.textContent =
+            `${tournament.tournamentName} (${tournament.maxTeams} teams)`;
+
+        select.appendChild(option);
+    });
+
+    if (tournaments.length === 0) {
+        select.innerHTML = '<option value="">No tournaments available</option>';
     }
 }
 
@@ -318,4 +352,136 @@ async function createTournament(event) {
         message.textContent = error.message || "Unable to create tournament.";
         message.style.color = "red";
     }
+}
+
+
+// Load groups for the selected tournament
+async function loadGroups() {
+    const tournamentId = document.getElementById("groupTournamentSelect").value;
+    const groupList = document.getElementById("groupList");
+    const groupMessage = document.getElementById("groupMessage");
+    const generateButton = document.getElementById("generateGroupsButton");
+
+    groupMessage.textContent = "";
+    generateButton.disabled = true;
+
+    if (!tournamentId) {
+        groupList.innerHTML = "<p>Select a tournament to view its groups.</p>";
+        return;
+    }
+
+    groupList.innerHTML = "<p>Loading groups...</p>";
+
+    try {
+        const response = await fetch(
+            `${TOURNAMENT_API_URL}/${tournamentId}/groups`
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve groups.");
+        }
+
+        const groups = await response.json();
+
+        if (groups.length === 0) {
+            groupList.innerHTML = "<p>No groups generated for this tournament yet.</p>";
+            generateButton.disabled = false;
+            return;
+        }
+
+        displayGroups(groups);
+
+        groupMessage.textContent = "Groups have already been generated.";
+        groupMessage.style.color = "green";
+
+    } catch (error) {
+        console.error("Error loading groups:", error);
+
+        groupList.innerHTML = "<p>Unable to load groups. Please try again.</p>";
+        groupMessage.textContent = error.message;
+        groupMessage.style.color = "red";
+    }
+}
+
+
+// Display generated groups
+function displayGroups(groups) {
+    const groupList = document.getElementById("groupList");
+
+    groupList.innerHTML = groups.map(group => `
+        <div class="group-card">
+            <h3>${escapeHTML(group.groupName)}</h3>
+
+            ${group.teams.map(team => `
+                <div class="group-team">
+                    <strong>${escapeHTML(team.teamName)}</strong>
+
+                    <p>Player 1: ${escapeHTML(team.player1Name)}</p>
+                    <p>Player 2: ${escapeHTML(team.player2Name)}</p>
+                    <p>Player 3: ${escapeHTML(team.player3Name)}</p>
+                </div>
+            `).join("")}
+        </div>
+    `).join("");
+}
+
+
+// Generate groups for the selected tournament
+async function generateGroups() {
+    const tournamentId = document.getElementById("groupTournamentSelect").value;
+    const groupMessage = document.getElementById("groupMessage");
+    const generateButton = document.getElementById("generateGroupsButton");
+
+    if (!tournamentId) {
+        groupMessage.textContent = "Please select a tournament first.";
+        groupMessage.style.color = "red";
+        return;
+    }
+
+    const confirmed = confirm(
+        "Are you sure you want to generate groups for this tournament? This action cannot be undone."
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    generateButton.disabled = true;
+    groupMessage.textContent = "Generating groups...";
+    groupMessage.style.color = "#64748b";
+
+    try {
+        const response = await fetch(
+            `${TOURNAMENT_API_URL}/${tournamentId}/groups/generate`,
+            {
+                method: "POST"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Failed to generate groups.");
+        }
+
+        groupMessage.textContent = "Groups generated successfully!";
+        groupMessage.style.color = "green";
+
+        displayGroups(result);
+
+        // Keep generation disabled after successful allocation.
+        generateButton.disabled = true;
+
+
+    } catch (error) {
+        console.error("Error generating groups:", error);
+
+        // Reload saved groups to determine whether generation is still allowed.
+        await loadGroups();
+
+        // Display the original error after refreshing the groups.
+        groupMessage.textContent = error.message;
+        groupMessage.style.color = "red";
+    }
+
 }

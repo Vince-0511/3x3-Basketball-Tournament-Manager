@@ -360,3 +360,92 @@ button.delete-button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Group Management */
+
+.group-section {
+    margin-bottom: 30px;
+}
+
+.group-management-container {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#groupTournamentSelect {
+    max-width: 450px;
+}
+
+.group-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+#refreshGroupsButton {
+    background-color: #334155;
+}
+
+#refreshGroupsButton:hover {
+    background-color: #1e293b;
+}
+
+#groupMessage {
+    margin-top: 18px;
+    font-size: 14px;
+}
+
+#groupList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.group-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f8fafc;
+}
+
+.group-card h3 {
+    color: #f97316;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.group-team {
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.group-team:last-child {
+    margin-bottom: 0;
+}
+
+.group-team strong {
+    display: block;
+    color: #172033;
+    margin-bottom: 6px;
+}
+
+.group-team p {
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+    #groupList {
+        grid-template-columns: 1fr;
+    }
+}

@@ -129,6 +129,46 @@
                 </div>
             </section>
 
+            <!-- Group Management -->
+            <section class="group-section" id="groupManagement">
+                <div class="section-header">
+                    <div>
+                        <h2>Group Management</h2>
+                        <p>Generate and manage tournament groups.</p>
+                    </div>
+                </div>
+
+                <div class="group-management-container">
+
+                    <div class="form-group">
+                        <label for="groupTournamentSelect">
+                            Select Tournament
+                        </label>
+
+                        <select id="groupTournamentSelect">
+                            <option value="">Loading tournaments...</option>
+                        </select>
+                    </div>
+
+                    <div class="group-actions">
+                        <button type="button" id="generateGroupsButton">
+                            Generate Groups
+                        </button>
+
+                        <button type="button" id="refreshGroupsButton">
+                            Refresh Groups
+                        </button>
+                    </div>
+
+                    <p id="groupMessage"></p>
+
+                    <div id="groupList">
+                        <p>Select a tournament to view its groups.</p>
+                    </div>
+
+                </div>
+            </section>
+
             <!-- Tournament Overview -->
             <section class="overview">
                 <h2>Tournament Overview</h2>
