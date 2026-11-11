@@ -50,5 +50,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+
+    @ExceptionHandler(TeamNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleTeamNotFound(
+            TeamNotFoundException exception) {
+
+        Map<String, String> response =
+                Map.of("error", exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
 }
 

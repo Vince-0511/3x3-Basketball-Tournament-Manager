@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import com.tournament.dto.TeamRequest;
 import com.tournament.exception.DuplicateTeamException;
 import com.tournament.exception.TeamLimitReachedException;
+import com.tournament.exception.TeamNotFoundException;
 import com.tournament.model.Team;
 import com.tournament.repository.TeamRepository;
-
 
 @Service
 public class TeamService {
@@ -58,5 +58,17 @@ public Team registerTeam(TeamRequest request) {
     public List<Team> getAllTeams() {
         return teamRepository.findAll();
     }
+
+    public Team updateTeamStatus(Long teamId, String status) {
+
+    Team team = teamRepository.findById(teamId)
+            .orElseThrow(() -> new TeamNotFoundException(
+                "Team not found with ID: " + teamId
+            ));
+
+    team.setStatus(status);
+
+    return teamRepository.save(team);
+}
 }
 
