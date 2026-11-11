@@ -1,7 +1,0 @@
-/Users/vince_0511/Basketball Manager/backend/src/main/java/com/tournament/TournamentManagerApplication.java
-/Users/vince_0511/Basketball Manager/backend/src/main/java/com/tournament/controller/TeamController.java
-/Users/vince_0511/Basketball Manager/backend/src/main/java/com/tournament/exception/DuplicateTeamException.java
-/Users/vince_0511/Basketball Manager/backend/src/main/java/com/tournament/exception/GlobalExceptionHandler.java
-/Users/vince_0511/Basketball Manager/backend/src/main/java/com/tournament/model/Team.java
-/Users/vince_0511/Basketball Manager/backend/src/main/java/com/tournament/repository/TeamRepository.java
-/Users/vince_0511/Basketball Manager/backend/src/main/java/com/tournament/service/TeamService.java
