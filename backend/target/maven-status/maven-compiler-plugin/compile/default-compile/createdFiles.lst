@@ -1,0 +1,5 @@
+com/tournament/controller/TeamController.class
+com/tournament/TournamentManagerApplication.class
+com/tournament/model/Team.class
+com/tournament/repository/TeamRepository.class
+com/tournament/service/TeamService.class
