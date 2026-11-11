@@ -1,5 +1,6 @@
 
 package com.tournament.exception;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +24,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(response);
-
     }
-
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(
@@ -50,7 +49,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
-
     @ExceptionHandler(TeamNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleTeamNotFound(
             TeamNotFoundException exception) {
@@ -71,5 +69,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
-}
+    // Handle invalid tournament input
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(
+            IllegalArgumentException exception) {
 
+        Map<String, String> response =
+                Map.of("error", exception.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(TournamentNotFoundException.class)
+        public ResponseEntity<Map<String, String>> handleTournamentNotFound(
+                TournamentNotFoundException exception) {
+
+        Map<String, String> response =
+                Map.of("error", exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+}

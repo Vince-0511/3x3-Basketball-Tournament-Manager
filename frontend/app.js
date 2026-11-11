@@ -1,9 +1,13 @@
-
 const API_URL = "http://localhost:8080/api/teams";
+const TOURNAMENT_API_URL = "http://localhost:8080/api/tournaments";
 
 // Load teams when the page opens
 document.addEventListener("DOMContentLoaded", () => {
     loadTeams();
+    loadTournaments();
+
+    document.getElementById("tournamentForm")
+        .addEventListener("submit", createTournament);
 });
 
 // Get teams from the backend
@@ -193,5 +197,125 @@ async function deleteTeam(teamId) {
     } catch (error) {
         console.error("Error deleting team:", error);
         alert("Unable to delete team.");
+    }
+}
+
+
+// Load tournaments from the backend
+async function loadTournaments() {
+    const tournamentList = document.getElementById("tournamentList");
+
+    tournamentList.innerHTML = "<p>Loading tournaments...</p>";
+
+    try {
+        const response = await fetch(TOURNAMENT_API_URL);
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve tournaments");
+        }
+
+        const tournaments = await response.json();
+
+        displayTournaments(tournaments);
+
+    } catch (error) {
+        console.error("Error loading tournaments:", error);
+
+        tournamentList.innerHTML = `
+            <p>Unable to load tournaments. Please check your backend connection.</p>
+        `;
+    }
+}
+
+
+// Display tournaments
+function displayTournaments(tournaments) {
+    const tournamentList = document.getElementById("tournamentList");
+
+    if (tournaments.length === 0) {
+        tournamentList.innerHTML = "<p>No tournaments created yet.</p>";
+        return;
+    }
+
+    tournamentList.innerHTML = tournaments.map(tournament => `
+        <div class="tournament-card">
+            <h3>${escapeHTML(tournament.tournamentName)}</h3>
+
+            <p><strong>Venue:</strong>
+                ${escapeHTML(tournament.venue || "Not specified")}
+            </p>
+
+            <p><strong>Start Date:</strong>
+                ${escapeHTML(tournament.startDate || "Not specified")}
+            </p>
+
+            <p><strong>End Date:</strong>
+                ${escapeHTML(tournament.endDate || "Not specified")}
+            </p>
+
+            <p><strong>Maximum Teams:</strong>
+                ${tournament.maxTeams}
+            </p>
+
+            <p><strong>Number of Courts:</strong>
+                ${tournament.courtCount}
+            </p>
+        </div>
+    `).join("");
+}
+
+
+// Create a tournament
+async function createTournament(event) {
+    event.preventDefault();
+
+    const tournamentData = {
+        tournamentName: document.getElementById("tournamentName").value.trim(),
+        venue: document.getElementById("venue").value.trim() || null,
+        startDate: document.getElementById("startDate").value || null,
+        endDate: document.getElementById("endDate").value || null,
+        maxTeams: Number(document.getElementById("maxTeams").value),
+        courtCount: Number(document.getElementById("courtCount").value)
+    };
+
+    const message = document.getElementById("tournamentMessage");
+
+    if (
+        tournamentData.startDate &&
+        tournamentData.endDate &&
+        tournamentData.endDate < tournamentData.startDate
+    ) {
+        message.textContent = "End date cannot be before start date.";
+        return;
+    }
+
+    try {
+        const response = await fetch(TOURNAMENT_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(tournamentData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            const errorMessage = Object.values(result).join(", ");
+            throw new Error(errorMessage || "Failed to create tournament");
+        }
+
+        message.textContent = "Tournament created successfully!";
+        message.style.color = "green";
+
+        document.getElementById("tournamentForm").reset();
+
+        await loadTournaments();
+
+    } catch (error) {
+        console.error("Error creating tournament:", error);
+
+        message.textContent = error.message || "Unable to create tournament.";
+        message.style.color = "red";
     }
 }
