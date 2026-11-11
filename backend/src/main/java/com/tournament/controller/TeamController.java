@@ -51,4 +51,9 @@ public class TeamController {
         return teamService.updateTeamStatus(id, request.getStatus());
     }
 
+    @GetMapping("/{id}")
+    public Team getTeamById(@PathVariable Long id) {
+        return teamService.getTeamById(id);
+    }
+
 }

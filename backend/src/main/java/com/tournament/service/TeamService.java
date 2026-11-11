@@ -11,7 +11,6 @@ import com.tournament.exception.TeamLimitReachedException;
 import com.tournament.exception.TeamNotFoundException;
 import com.tournament.model.Team;
 import com.tournament.repository.TeamRepository;
-
 @Service
 public class TeamService {
 
@@ -23,34 +22,32 @@ public class TeamService {
     }
 
     // Register a new team
-    
+    public Team registerTeam(TeamRequest request) {
 
-public Team registerTeam(TeamRequest request) {
+        // Check whether the tournament is full
+        if (teamRepository.count() >= MAX_TEAMS) {
+            throw new TeamLimitReachedException(
+                "Tournament is full. Maximum 24 teams allowed!"
+            );
+        }
 
-    // Check whether the tournament is full
-    if (teamRepository.count() >= MAX_TEAMS) {
-        throw new TeamLimitReachedException(
-            "Tournament is full. Maximum 24 teams allowed!"
-        );
+        String teamName = request.getTeamName().trim();
+
+        // Check for duplicate team name
+        if (teamRepository.existsByTeamName(teamName)) {
+            throw new DuplicateTeamException("Team name already exists!");
+        }
+
+        Team team = new Team();
+
+        team.setTeamName(teamName);
+        team.setPlayer1Name(request.getPlayer1Name().trim());
+        team.setPlayer2Name(request.getPlayer2Name().trim());
+        team.setPlayer3Name(request.getPlayer3Name().trim());
+        team.setStatus("PENDING");
+
+        return teamRepository.save(team);
     }
-
-    String teamName = request.getTeamName().trim();
-
-    // Check for duplicate team name
-    if (teamRepository.existsByTeamName(teamName)) {
-        throw new DuplicateTeamException("Team name already exists!");
-    }
-
-    Team team = new Team();
-
-    team.setTeamName(teamName);
-    team.setPlayer1Name(request.getPlayer1Name().trim());
-    team.setPlayer2Name(request.getPlayer2Name().trim());
-    team.setPlayer3Name(request.getPlayer3Name().trim());
-    team.setStatus("PENDING");
-
-    return teamRepository.save(team);
-}
 
 
 
@@ -61,14 +58,23 @@ public Team registerTeam(TeamRequest request) {
 
     public Team updateTeamStatus(Long teamId, String status) {
 
-    Team team = teamRepository.findById(teamId)
-            .orElseThrow(() -> new TeamNotFoundException(
-                "Team not found with ID: " + teamId
-            ));
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new TeamNotFoundException(
+                    "Team not found with ID: " + teamId
+                ));
 
-    team.setStatus(status);
+        team.setStatus(status);
 
-    return teamRepository.save(team);
-}
+        return teamRepository.save(team);
+    }
+
+    public Team getTeamById(Long teamId) {
+
+        return teamRepository.findById(teamId)
+                .orElseThrow(() -> new TeamNotFoundException(
+                        "Team not found with ID: " + teamId
+                ));
+    }
+
 }
 
