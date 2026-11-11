@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3x3 Basketball Manager | Admin</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="dashboard">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>3x3 MANAGER</h2>
+                <p>TOURNAMENT ADMIN</p>
+            </div>
+
+            <nav>
+                <a href="#" class="active">Dashboard</a>
+                <a href="#">Teams</a>
+                <a href="#">Groups</a>
+                <a href="#">Fixtures</a>
+                <a href="#">Results</a>
+                <a href="#">Settings</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>Admin Panel</p>
+                <small>Prototype 0.3</small>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Manage your 3x3 basketball tournament.</p>
+                </div>
+                <div class="admin-profile">
+                    <span>Administrator</span>
+                </div>
+            </header>
+
+            <!-- Tournament Overview -->
+            <section class="overview">
+                <h2>Tournament Overview</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p>Total Teams</p>
+                        <h3 id="totalTeams">0</h3>
+                    </div>
+
+                    <div class="stat-card">
+                        <p>Pending Approval</p>
+                        <h3 id="pendingTeams">0</h3>
+                    </div>
+
+                    <div class="stat-card">
+                        <p>Approved Teams</p>
+                        <h3 id="approvedTeams">0</h3>
+                    </div>
+
+                    <div class="stat-card">
+                        <p>Rejected Teams</p>
+                        <h3 id="rejectedTeams">0</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Team Management -->
+            <section class="team-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Team Management</h2>
+                        <p>Review and manage team registrations.</p>
+                    </div>
+
+                    <button id="refreshButton">Refresh Teams</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Team Name</th>
+                                <th>Player 1</th>
+                                <th>Player 2</th>
+                                <th>Player 3</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="teamTableBody">
+                            <tr>
+                                <td colspan="7">Loading teams...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
