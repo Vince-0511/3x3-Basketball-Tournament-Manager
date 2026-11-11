@@ -7,28 +7,35 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "teams")
 public class Team {
 
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Team name is required")
     @Column(nullable = false, unique = true)
     private String teamName;
 
+    @NotBlank(message = "Player 1 name is required")
     @Column(nullable = false)
     private String player1Name;
 
+    @NotBlank(message = "Player 2 name is required")
     @Column(nullable = false)
     private String player2Name;
 
+    @NotBlank(message = "Player 3 name is required")
     @Column(nullable = false)
     private String player3Name;
 
     private String status = "PENDING";
+
 
     public Team() {
     }
@@ -79,3 +86,4 @@ public class Team {
         this.status = status;
     }
 }
+    

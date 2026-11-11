@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tournament.model.Team;
 import com.tournament.service.TeamService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/teams")
 @CrossOrigin(origins = "*")
@@ -26,7 +28,7 @@ public class TeamController {
 
     // Register a new team
     @PostMapping
-    public Team registerTeam(@RequestBody Team team) {
+    public Team registerTeam(@Valid @RequestBody Team team) {
         return teamService.registerTeam(team);
     }
 
