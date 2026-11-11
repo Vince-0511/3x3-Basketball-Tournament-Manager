@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tournament.dto.TeamRequest;
 import com.tournament.model.Team;
 import com.tournament.service.TeamService;
 
@@ -28,8 +29,8 @@ public class TeamController {
 
     // Register a new team
     @PostMapping
-    public Team registerTeam(@Valid @RequestBody Team team) {
-        return teamService.registerTeam(team);
+    public Team registerTeam(@Valid @RequestBody TeamRequest request) {
+        return teamService.registerTeam(request);
     }
 
     // Retrieve all teams
