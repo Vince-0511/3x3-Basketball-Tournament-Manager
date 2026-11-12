@@ -42,6 +42,19 @@ public class Fixture {
     @Column(nullable = false)
     private String status = "UPCOMING";
 
+    @Column
+    private Integer teamAScore;
+
+    @Column
+    private Integer teamBScore;
+
+    @Column
+    private String resultStatus = "NOT_SUBMITTED";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "winner_id")
+    private Team winner;
+
     public Fixture() {
     }
 
@@ -95,5 +108,37 @@ public class Fixture {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getTeamAScore() {
+        return teamAScore;
+    }
+
+    public void setTeamAScore(Integer teamAScore) {
+        this.teamAScore = teamAScore;
+    }
+
+    public Integer getTeamBScore() {
+        return teamBScore;
+    }
+
+    public void setTeamBScore(Integer teamBScore) {
+        this.teamBScore = teamBScore;
+    }
+
+    public String getResultStatus() {
+        return resultStatus;
+    }
+
+    public void setResultStatus(String resultStatus) {
+        this.resultStatus = resultStatus;
+    }
+
+    public Team getWinner() {
+        return winner;
+    }
+
+    public void setWinner(Team winner) {
+        this.winner = winner;
     }
 }

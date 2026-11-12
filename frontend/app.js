@@ -28,6 +28,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("refreshFixturesButton")
         .addEventListener("click", loadFixtures);
+
+    // Group Standings
+    document.getElementById("standingsTournamentSelect")
+        .addEventListener("change", loadStandings);
+
+    document.getElementById("refreshStandingsButton")
+        .addEventListener("click", loadStandings);
+
+    // Match Results Management
+    document.getElementById("resultsTournamentSelect")
+        .addEventListener("change", loadResults);
+
+    document.getElementById("refreshResultsButton")
+        .addEventListener("click", loadResults);
+
+    // Handle dynamically generated result action buttons
+    document.getElementById("resultsTableBody")
+        .addEventListener("click", async (event) => {
+
+            const button = event.target.closest("button[data-action]");
+
+            if (!button) {
+                return;
+            }
+
+            const fixtureId = Number(button.dataset.fixtureId);
+            const action = button.dataset.action;
+
+            if (!Number.isSafeInteger(fixtureId) || fixtureId <= 0) {
+                return;
+            }
+
+            if (action === "submit") {
+                await submitMatchResult(fixtureId);
+            } else if (action === "verify") {
+                await verifyMatchResult(fixtureId);
+            }
+        });
 });
 
 
@@ -241,6 +279,8 @@ async function loadTournaments() {
         displayTournaments(tournaments);
         populateGroupTournamentSelect(tournaments);
         populateFixtureTournamentSelect(tournaments);
+        populateStandingsTournamentSelect(tournaments);
+        populateResultsTournamentSelect(tournaments);
 
     } catch (error) {
         console.error("Error loading tournaments:", error);
@@ -690,5 +730,504 @@ async function generateFixtures() {
 
         message.textContent = error.message;
         message.style.color = "red";
+    }
+}
+
+// Populate tournament dropdown for Group Standings
+function populateStandingsTournamentSelect(tournaments) {
+    const select = document.getElementById("standingsTournamentSelect");
+
+    select.innerHTML = '<option value="">Select a tournament</option>';
+
+    tournaments.forEach(tournament => {
+        const option = document.createElement("option");
+
+        option.value = tournament.id;
+        option.textContent =
+            `${tournament.tournamentName} (${tournament.maxTeams} teams)`;
+
+        select.appendChild(option);
+    });
+
+    if (tournaments.length === 0) {
+        select.innerHTML =
+            '<option value="">No tournaments available</option>';
+    }
+}
+
+// Load group standings for the selected tournament
+async function loadStandings() {
+    const tournamentId =
+        document.getElementById("standingsTournamentSelect").value;
+
+    const standingsList =
+        document.getElementById("standingsList");
+
+    const message =
+        document.getElementById("standingsMessage");
+
+    message.textContent = "";
+
+    if (!tournamentId) {
+        standingsList.innerHTML =
+            "<p>Select a tournament to view group standings.</p>";
+        return;
+    }
+
+    standingsList.innerHTML = "<p>Loading standings...</p>";
+
+    try {
+        const response = await fetch(
+            `${TOURNAMENT_API_URL}/${tournamentId}/standings`
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve group standings.");
+        }
+
+        const groups = await response.json();
+
+        if (groups.length === 0) {
+            standingsList.innerHTML =
+                "<p>No groups have been generated for this tournament.</p>";
+            return;
+        }
+
+        displayStandings(groups);
+
+        message.textContent =
+            `Standings loaded for ${groups.length} groups.`;
+
+        message.style.color = "green";
+
+    } catch (error) {
+        console.error("Error loading standings:", error);
+
+        standingsList.innerHTML =
+            "<p>Unable to load standings. Please try again.</p>";
+
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+}
+
+// Display group standings in tables
+function displayStandings(groups) {
+    const standingsList =
+        document.getElementById("standingsList");
+
+    standingsList.innerHTML = groups.map(group => `
+        <div class="standings-card">
+            <h3>${escapeHTML(group.groupName)}</h3>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Team</th>
+                            <th>P</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>PF</th>
+                            <th>PA</th>
+                            <th>PD</th>
+                            <th>Pts</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${group.standings.map((team, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${escapeHTML(team.teamName)}</td>
+                                <td>${team.played}</td>
+                                <td>${team.won}</td>
+                                <td>${team.lost}</td>
+                                <td>${team.pointsFor}</td>
+                                <td>${team.pointsAgainst}</td>
+                                <td>${team.pointDifference > 0
+                                    ? "+" + team.pointDifference
+                                    : team.pointDifference}</td>
+                                <td><strong>${team.competitionPoints}</strong></td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `).join("");
+}
+
+// Populate tournament dropdown for Match Results
+function populateResultsTournamentSelect(tournaments) {
+    const select = document.getElementById("resultsTournamentSelect");
+
+    select.innerHTML = '<option value="">Select a tournament</option>';
+
+    tournaments.forEach(tournament => {
+        const option = document.createElement("option");
+
+        option.value = tournament.id;
+        option.textContent =
+            `${tournament.tournamentName} (${tournament.maxTeams} teams)`;
+
+        select.appendChild(option);
+    });
+
+    if (tournaments.length === 0) {
+        select.innerHTML =
+            '<option value="">No tournaments available</option>';
+    }
+}
+
+// Load match results for the selected tournament
+async function loadResults() {
+    const tournamentId =
+        document.getElementById("resultsTournamentSelect").value;
+
+    const resultsTableBody =
+        document.getElementById("resultsTableBody");
+
+    const message =
+        document.getElementById("resultsMessage");
+
+    message.textContent = "";
+
+    if (!tournamentId) {
+        resultsTableBody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    Select a tournament to view match results.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    resultsTableBody.innerHTML = `
+        <tr>
+            <td colspan="7">Loading match results...</td>
+        </tr>
+    `;
+
+    try {
+        const response = await fetch(
+            `${TOURNAMENT_API_URL}/${tournamentId}/results`
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve match results.");
+        }
+
+        const results = await response.json();
+
+        if (results.length === 0) {
+            resultsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        No match results available for this tournament.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        displayResults(results);
+
+        message.textContent =
+            `Loaded ${results.length} match results.`;
+
+        message.style.color = "green";
+
+    } catch (error) {
+        console.error("Error loading match results:", error);
+
+        resultsTableBody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    Unable to load match results.
+                </td>
+            </tr>
+        `;
+
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+}
+
+// Display tournament match results
+function displayResults(results) {
+    const resultsTableBody =
+        document.getElementById("resultsTableBody");
+
+    resultsTableBody.innerHTML = results.map(result => {
+
+        const status = result.resultStatus;
+
+        let scoreHTML = "";
+        let actionHTML = "";
+        let statusClass = "";
+        let statusLabel = "";
+
+        if (status === "NOT_SUBMITTED") {
+
+            statusClass = "result-status-upcoming";
+            statusLabel = "NOT SUBMITTED";
+
+            scoreHTML = `
+                <div class="result-score-container">
+                    <input
+                        type="number"
+                        min="0"
+                        class="result-score-input"
+                        id="teamAScore-${result.fixtureId}"
+                        placeholder="A"
+                    >
+
+                    <span>-</span>
+
+                    <input
+                        type="number"
+                        min="0"
+                        class="result-score-input"
+                        id="teamBScore-${result.fixtureId}"
+                        placeholder="B"
+                    >
+                </div>
+            `;
+
+            actionHTML = `
+                <button
+                    type="button"
+                    class="result-action-button result-submit-button"
+                    data-action="submit"
+                    data-fixture-id="${result.fixtureId}"
+                >
+                    Submit Score
+                </button>
+            `;
+
+        } else if (status === "PENDING_VERIFICATION") {
+
+            statusClass = "result-status-pending";
+            statusLabel = "PENDING VERIFICATION";
+
+            scoreHTML = `
+                ${result.teamAScore} - ${result.teamBScore}
+            `;
+
+            actionHTML = `
+                <button
+                    type="button"
+                    class="result-action-button result-verify-button"
+                    data-action="verify"
+                    data-fixture-id="${result.fixtureId}"
+                >
+                    Verify Result
+                </button>
+            `;
+
+        } else if (status === "COMPLETED") {
+
+            statusClass = "result-status-completed";
+            statusLabel = "COMPLETED";
+
+            scoreHTML = `
+                <strong>
+                    ${result.teamAScore} - ${result.teamBScore}
+                </strong>
+            `;
+
+            actionHTML = `<span>Verified</span>`;
+
+        } else {
+            statusClass = "result-status-upcoming";
+            statusLabel = escapeHTML(status);
+            scoreHTML = "-";
+            actionHTML = "-";
+        }
+
+        return `
+            <tr>
+                <td>${result.fixtureId}</td>
+
+                <td>${escapeHTML(result.groupName)}</td>
+
+                <td>${escapeHTML(result.teamAName)}</td>
+
+                <td>${scoreHTML}</td>
+
+                <td>${escapeHTML(result.teamBName)}</td>
+
+                <td>
+                    <span class="result-status ${statusClass}">
+                        ${statusLabel}
+                    </span>
+                </td>
+
+                <td>${actionHTML}</td>
+            </tr>
+        `;
+
+    }).join("");
+}
+
+// Submit a match result
+async function submitMatchResult(fixtureId) {
+    const teamAScoreInput =
+        document.getElementById(`teamAScore-${fixtureId}`);
+
+    const teamBScoreInput =
+        document.getElementById(`teamBScore-${fixtureId}`);
+
+    const message =
+        document.getElementById("resultsMessage");
+
+    const teamAScore = Number(teamAScoreInput.value);
+    const teamBScore = Number(teamBScoreInput.value);
+
+    // Validate scores
+    if (
+        teamAScoreInput.value.trim() === "" ||
+        teamBScoreInput.value.trim() === ""
+    ) {
+        message.textContent = "Please enter both team scores.";
+        message.style.color = "red";
+        return;
+    }
+
+    if (
+        !Number.isSafeInteger(teamAScore) ||
+        !Number.isSafeInteger(teamBScore) ||
+        teamAScore < 0 ||
+        teamBScore < 0
+    ) {
+        message.textContent =
+            "Scores must be non-negative whole numbers.";
+        message.style.color = "red";
+        return;
+    }
+
+    if (teamAScore === teamBScore) {
+        message.textContent =
+            "Match scores cannot be tied. Please enter a winner.";
+        message.style.color = "red";
+        return;
+    }
+
+    const button = document.querySelector(
+        `button[data-action="submit"][data-fixture-id="${fixtureId}"]`
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Submitting...";
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:8080/api/fixtures/${fixtureId}/result`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    teamAScore: teamAScore,
+                    teamBScore: teamBScore
+                })
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+
+            throw new Error(
+                errorData.error || "Failed to submit match result."
+            );
+        }
+
+        await loadResults();
+
+        message.textContent =
+            `Fixture #${fixtureId} score submitted. Awaiting verification.`;
+
+        message.style.color = "green";
+
+    } catch (error) {
+        console.error("Error submitting match result:", error);
+
+        message.textContent = error.message;
+        message.style.color = "red";
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Submit Score";
+        }
+    }
+}
+
+// Verify a submitted match result
+async function verifyMatchResult(fixtureId) {
+    const message =
+        document.getElementById("resultsMessage");
+
+    const button = document.querySelector(
+        `button[data-action="verify"][data-fixture-id="${fixtureId}"]`
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Verifying...";
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:8080/api/fixtures/${fixtureId}/result/verify`,
+            {
+                method: "PATCH"
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+
+            throw new Error(
+                errorData.error || "Failed to verify match result."
+            );
+        }
+
+        // Refresh results and standings after verification
+        await loadResults();
+
+        const resultsTournamentId =
+            document.getElementById("resultsTournamentSelect").value;
+
+        const standingsTournamentId =
+            document.getElementById("standingsTournamentSelect").value;
+
+        if (
+            resultsTournamentId &&
+            resultsTournamentId === standingsTournamentId
+        ) {
+            await loadStandings();
+        }
+
+        message.textContent =
+            `Fixture #${fixtureId} result verified successfully.`;
+
+        message.style.color = "green";
+
+    } catch (error) {
+        console.error("Error verifying match result:", error);
+
+        message.textContent = error.message;
+        message.style.color = "red";
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Verify Result";
+        }
     }
 }

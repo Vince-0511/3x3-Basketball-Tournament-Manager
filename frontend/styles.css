@@ -449,3 +449,197 @@ button.delete-button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* Group Standings */
+
+.standings-section {
+    margin-bottom: 30px;
+}
+
+.standings-management-container {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#standingsTournamentSelect {
+    max-width: 450px;
+}
+
+.standings-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+#refreshStandingsButton {
+    background-color: #334155;
+}
+
+#refreshStandingsButton:hover {
+    background-color: #1e293b;
+}
+
+#standingsMessage {
+    margin-top: 18px;
+    font-size: 14px;
+}
+
+#standingsList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.standings-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    min-width: 0;
+}
+
+.standings-card h3 {
+    color: #f97316;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.standings-card .table-container {
+    background: white;
+    border-radius: 8px;
+}
+
+.standings-card table {
+    min-width: 650px;
+}
+
+.standings-card th,
+.standings-card td {
+    padding: 12px 10px;
+    font-size: 13px;
+}
+
+.standings-card tbody tr:first-child {
+    background-color: #fff7ed;
+}
+
+.standings-card tbody tr:first-child td {
+    font-weight: bold;
+}
+
+@media (max-width: 1000px) {
+    #standingsList {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Match Results Management */
+
+.results-section {
+    margin-bottom: 30px;
+}
+
+.results-management-container {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#resultsTournamentSelect {
+    max-width: 450px;
+}
+
+.results-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+#refreshResultsButton {
+    background-color: #334155;
+}
+
+#refreshResultsButton:hover {
+    background-color: #1e293b;
+}
+
+#resultsMessage {
+    margin-top: 18px;
+    font-size: 14px;
+}
+
+#resultsTableBody td {
+    vertical-align: middle;
+}
+
+.result-score-input {
+    width: 65px;
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.result-score-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.result-action-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.result-submit-button {
+    background-color: #f97316;
+    color: white;
+}
+
+.result-submit-button:hover {
+    background-color: #ea580c;
+}
+
+.result-verify-button {
+    background-color: #16a34a;
+    color: white;
+}
+
+.result-verify-button:hover {
+    background-color: #15803d;
+}
+
+.result-status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.result-status-upcoming {
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
+.result-status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.result-status-completed {
+    background-color: #dcfce7;
+    color: #166534;
+}

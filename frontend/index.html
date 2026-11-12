@@ -230,6 +230,101 @@
                 </div>
             </section>
 
+            <!-- Match Results Management -->
+            <section class="results-section" id="resultsManagement">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Match Results Management</h2>
+                        <p>Submit, verify, and manage tournament match results.</p>
+                    </div>
+                </div>
+
+                <div class="results-management-container">
+
+                    <div class="form-group">
+                        <label for="resultsTournamentSelect">
+                            Select Tournament
+                        </label>
+
+                        <select id="resultsTournamentSelect">
+                            <option value="">Loading tournaments...</option>
+                        </select>
+                    </div>
+
+                    <div class="results-actions">
+                        <button type="button" id="refreshResultsButton">
+                            Refresh Results
+                        </button>
+                    </div>
+
+                    <p id="resultsMessage"></p>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Match ID</th>
+                                    <th>Group</th>
+                                    <th>Team A</th>
+                                    <th>Score</th>
+                                    <th>Team B</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="resultsTableBody">
+                                <tr>
+                                    <td colspan="7">
+                                        Select a tournament to view match results.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Group Standings -->
+            <section class="standings-section" id="standingsManagement">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Group Standings</h2>
+                        <p>View team rankings based on completed match results.</p>
+                    </div>
+                </div>
+
+                <div class="standings-management-container">
+
+                    <div class="form-group">
+                        <label for="standingsTournamentSelect">
+                            Select Tournament
+                        </label>
+
+                        <select id="standingsTournamentSelect">
+                            <option value="">Loading tournaments...</option>
+                        </select>
+                    </div>
+
+                    <div class="standings-actions">
+                        <button type="button" id="refreshStandingsButton">
+                            Refresh Standings
+                        </button>
+                    </div>
+
+                    <p id="standingsMessage"></p>
+
+                    <div id="standingsList">
+                        <p>Select a tournament to view group standings.</p>
+                    </div>
+
+                </div>
+
+            </section>
 
             <!-- Tournament Overview -->
             <section class="overview">

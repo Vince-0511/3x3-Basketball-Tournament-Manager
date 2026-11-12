@@ -13,4 +13,6 @@ public interface FixtureRepository extends JpaRepository<Fixture, Long> {
 
     List<Fixture> findByTournamentGroup_Tournament_Id(Long tournamentId);
 
+    List<Fixture> findByTournamentGroup_Id(Long groupId);
+
 }
