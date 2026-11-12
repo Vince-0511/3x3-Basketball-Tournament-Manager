@@ -7,6 +7,7 @@ const TOURNAMENT_API_URL = "http://localhost:8080/api/tournaments";
 document.addEventListener("DOMContentLoaded", () => {
     loadTeams();
     loadTournaments();
+    initializeNavigation();
 
     document.getElementById("tournamentForm")
         .addEventListener("submit", createTournament);
@@ -1230,4 +1231,108 @@ async function verifyMatchResult(fixtureId) {
             button.textContent = "Verify Result";
         }
     }
+}
+
+// ========================================
+// Prototype 0.8 - Sidebar Navigation
+// ========================================
+
+function initializeNavigation() {
+    const navigationLinks = document.querySelectorAll(
+        "#sidebarNavigation a[data-page]"
+    );
+
+    const pageSections = document.querySelectorAll(
+        "[data-page-section]"
+    );
+
+    const pageTitle = document.querySelector(".topbar h1");
+    const pageDescription = document.querySelector(".topbar p");
+
+    const pageInformation = {
+        dashboard: {
+            title: "Dashboard",
+            description: "Overview of your 3x3 basketball tournament."
+        },
+        tournaments: {
+            title: "Tournaments",
+            description: "Create and manage your tournaments."
+        },
+        teams: {
+            title: "Teams",
+            description: "Review and manage team registrations."
+        },
+        groups: {
+            title: "Groups",
+            description: "Generate and manage tournament groups."
+        },
+        fixtures: {
+            title: "Fixtures",
+            description: "Manage tournament match schedules."
+        },
+        results: {
+            title: "Results",
+            description: "Submit and verify match results."
+        },
+        standings: {
+            title: "Standings",
+            description: "View tournament group rankings."
+        }
+    };
+
+    function showPage(pageName) {
+        if (!pageInformation[pageName]) {
+            pageName = "dashboard";
+        }
+
+        // Update sidebar active state
+        navigationLinks.forEach(link => {
+            const isActive = link.dataset.page === pageName;
+
+            link.classList.toggle("active", isActive);
+
+            if (isActive) {
+                link.setAttribute("aria-current", "page");
+            } else {
+                link.removeAttribute("aria-current");
+            }
+        });
+
+        // Show only the selected section
+        pageSections.forEach(section => {
+            const isActive =
+                section.dataset.pageSection === pageName;
+
+            section.classList.toggle("page-active", isActive);
+
+            // Control visibility directly
+            section.style.display = isActive ? "block" : "none";
+        });
+
+        // Update page heading
+        pageTitle.textContent = pageInformation[pageName].title;
+
+        pageDescription.textContent =
+            pageInformation[pageName].description;
+
+        // Return to the top when changing pages
+        window.scrollTo(0, 0);
+    }
+
+    // Handle navigation clicks
+    navigationLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            showPage(link.dataset.page);
+        });
+    });
+
+    // Support browser back/forward navigation
+    window.addEventListener("hashchange", () => {
+        const pageName = window.location.hash.substring(1);
+        showPage(pageName);
+    });
+
+    // Display the correct page on initial load
+    const initialPage = window.location.hash.substring(1);
+    showPage(initialPage || "dashboard");
 }

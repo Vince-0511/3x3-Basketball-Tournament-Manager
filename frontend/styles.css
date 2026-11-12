@@ -643,3 +643,248 @@ button.delete-button:hover {
     background-color: #dcfce7;
     color: #166534;
 }
+
+/* ========================================
+   Prototype 0.8 - Page Navigation
+======================================== */
+
+/* Hide inactive pages */
+[data-page-section] {
+    display: none;
+}
+
+/* Show the selected page */
+[data-page-section].page-active {
+    display: block;
+}
+
+/* Highlight active sidebar navigation */
+.sidebar nav a.active {
+    background-color: #f97316;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* Sidebar hover effect */
+.sidebar nav a:hover:not(.active) {
+    background-color: #334155;
+    color: white;
+}
+
+/* Smooth page appearance */
+[data-page-section].page-active {
+    animation: pageFadeIn 0.2s ease-in-out;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   Prototype 0.8 - Page Visibility Fix
+======================================== */
+
+/* Hide every inactive page */
+.main-content section[data-page-section] {
+    display: none;
+}
+
+/* Display only the active page */
+.main-content section[data-page-section].page-active {
+    display: block;
+}
+
+/* ========================================
+   Prototype 0.8 - Dashboard Welcome
+======================================== */
+
+.dashboard-welcome {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 30px;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #172033, #263b59);
+    color: white;
+    border-radius: 12px;
+}
+
+.dashboard-welcome h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.dashboard-welcome p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #cbd5e1;
+    max-width: 650px;
+}
+
+.dashboard-version {
+    background-color: #f97316;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dashboard-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #172033;
+    margin-bottom: 20px;
+}
+
+/* Responsive dashboard welcome */
+
+@media (max-width: 768px) {
+    .dashboard-welcome {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 24px 20px;
+    }
+
+    .dashboard-welcome h2 {
+        font-size: 22px;
+    }
+}
+
+/* ========================================
+   Prototype 0.8 - Dashboard Quick Access
+======================================== */
+
+.dashboard-quick-access {
+    margin-top: 35px;
+}
+
+.quick-access-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.quick-access-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #172033;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.quick-access-card:hover {
+    transform: translateY(-4px);
+    border-color: #f97316;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.quick-access-card h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #172033;
+}
+
+.quick-access-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #64748b;
+    flex-grow: 1;
+}
+
+.quick-access-card span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f97316;
+}
+
+.quick-access-card:focus-visible {
+    outline: 3px solid #f97316;
+    outline-offset: 3px;
+}
+
+/* Responsive layout */
+
+@media (max-width: 1200px) {
+    .quick-access-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .quick-access-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-access-card {
+        padding: 20px;
+    }
+}
+
+/* ========================================
+   Prototype 0.8 - Sidebar Footer
+======================================== */
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+}
+
+.sidebar-footer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.sidebar-status-dot {
+    width: 9px;
+    height: 9px;
+    min-width: 9px;
+    background-color: #22c55e;
+    border-radius: 50%;
+}
+
+.sidebar-footer-info p {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.sidebar-footer-info small {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.sidebar-version {
+    display: block;
+    text-align: center;
+    padding: 9px 12px;
+    background-color: #263b59;
+    color: #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3x3 Basketball Manager | Admin</title>
-    <link rel="stylesheet" href="styles.css">
+   <link rel="stylesheet" href="styles.css?v=0.8.3">
 </head>
 <body>
 
@@ -18,18 +18,47 @@
                 <p>TOURNAMENT ADMIN</p>
             </div>
 
-            <nav>
-                <a href="#" class="active">Dashboard</a>
-                <a href="#">Teams</a>
-                <a href="#">Groups</a>
-                <a href="#">Fixtures</a>
-                <a href="#">Results</a>
-                <a href="#">Settings</a>
+            <nav id="sidebarNavigation">
+                <a href="#dashboard" class="active" data-page="dashboard">
+                    Dashboard
+                </a>
+
+                <a href="#tournaments" data-page="tournaments">
+                    Tournaments
+                </a>
+
+                <a href="#teams" data-page="teams">
+                    Teams
+                </a>
+
+                <a href="#groups" data-page="groups">
+                    Groups
+                </a>
+
+                <a href="#fixtures" data-page="fixtures">
+                    Fixtures
+                </a>
+
+                <a href="#results" data-page="results">
+                    Results
+                </a>
+
+                <a href="#standings" data-page="standings">
+                    Standings
+                </a>
             </nav>
 
             <div class="sidebar-footer">
-                <p>Admin Panel</p>
-                <small>Prototype 0.3</small>
+                <div class="sidebar-footer-info">
+                    <span class="sidebar-status-dot"></span>
+
+                    <div>
+                        <p>Admin Panel</p>
+                        <small>System Development</small>
+                    </div>
+                </div>
+
+                <span class="sidebar-version">Prototype 0.8</span>
             </div>
         </aside>
 
@@ -47,7 +76,7 @@
             </header>
 
             <!-- Tournament Management -->
-            <section class="tournament-section">
+            <section class="tournament-section" data-page-section="tournaments">
                 <div class="section-header">
                     <div>
                         <h2>Tournament Management</h2>
@@ -130,7 +159,7 @@
             </section>
 
             <!-- Group Management -->
-            <section class="group-section" id="groupManagement">
+            <section class="group-section" id="groupManagement" data-page-section="groups">
                 <div class="section-header">
                     <div>
                         <h2>Group Management</h2>
@@ -171,7 +200,7 @@
 
 
             <!-- Fixture Management -->
-            <section class="fixture-section" id="fixtureManagement">
+            <section class="fixture-section" id="fixtureManagement" data-page-section="fixtures">
                 <div class="section-header">
                     <div>
                         <h2>Fixture Management</h2>
@@ -231,7 +260,7 @@
             </section>
 
             <!-- Match Results Management -->
-            <section class="results-section" id="resultsManagement">
+            <section class="results-section" id="resultsManagement" data-page-section="results">
 
                 <div class="section-header">
                     <div>
@@ -289,7 +318,7 @@
             </section>
 
             <!-- Group Standings -->
-            <section class="standings-section" id="standingsManagement">
+            <section class="standings-section" id="standingsManagement" data-page-section="standings">
 
                 <div class="section-header">
                     <div>
@@ -327,8 +356,21 @@
             </section>
 
             <!-- Tournament Overview -->
-            <section class="overview">
-                <h2>Tournament Overview</h2>
+            <section class="overview" data-page-section="dashboard">
+                <!-- Dashboard Welcome -->
+                <div class="dashboard-welcome">
+                    <div>
+                        <h2>Tournament Dashboard</h2>
+                        <p>
+                            Welcome to your 3x3 Basketball Tournament Management System.
+                            Monitor registrations and manage your tournament operations.
+                        </p>
+                    </div>
+
+                    <span class="dashboard-version">Prototype 0.8</span>
+                </div>
+
+                <h3 class="dashboard-section-title">Team Registration Overview</h3>
 
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -351,10 +393,44 @@
                         <h3 id="rejectedTeams">0</h3>
                     </div>
                 </div>
+                <!-- Dashboard Quick Access -->
+                <div class="dashboard-quick-access">
+
+                    <h3 class="dashboard-section-title">Quick Access</h3>
+
+                    <div class="quick-access-grid">
+
+                        <a href="#teams" class="quick-access-card">
+                            <h4>Manage Teams</h4>
+                            <p>Review registrations and approve teams.</p>
+                            <span>Open Teams →</span>
+                        </a>
+
+                        <a href="#fixtures" class="quick-access-card">
+                            <h4>View Fixtures</h4>
+                            <p>View tournament schedules and match details.</p>
+                            <span>Open Fixtures →</span>
+                        </a>
+
+                        <a href="#results" class="quick-access-card">
+                            <h4>Match Results</h4>
+                            <p>Submit scores and verify match results.</p>
+                            <span>Open Results →</span>
+                        </a>
+
+                        <a href="#standings" class="quick-access-card">
+                            <h4>Group Standings</h4>
+                            <p>Check group rankings and team performance.</p>
+                            <span>Open Standings →</span>
+                        </a>
+
+                    </div>
+
+                </div>
             </section>
 
             <!-- Team Management -->
-            <section class="team-section">
+            <section class="team-section" data-page-section="teams">
                 <div class="section-header">
                     <div>
                         <h2>Team Management</h2>
