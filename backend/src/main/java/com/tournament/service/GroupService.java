@@ -43,6 +43,7 @@ public class GroupService {
     @Transactional
     public List<GroupResponse> generateGroups(Long tournamentId) {
 
+        // Find the selected tournament
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() ->
                         new TournamentNotFoundException(
@@ -50,14 +51,20 @@ public class GroupService {
                         )
                 );
 
+        // Prevent duplicate group generation
         if (tournamentGroupRepository.existsByTournament_Id(tournamentId)) {
             throw new GroupAllocationException(
                     "Groups have already been generated for this tournament"
             );
         }
 
-        List<Team> approvedTeams = teamRepository.findByStatus("APPROVED");
+        // Retrieve approved teams from this tournament only
+        List<Team> approvedTeams =
+                teamRepository.findByTournamentIdAndStatus(
+                        tournamentId, "APPROVED"
+                );
 
+        // Validate that all required teams are approved
         if (approvedTeams.size() != tournament.getMaxTeams()) {
             throw new GroupAllocationException(
                     "This tournament requires exactly "
@@ -67,30 +74,58 @@ public class GroupService {
             );
         }
 
+        // Prevent previously assigned seeds from being overwritten
+        if (approvedTeams.stream()
+                .anyMatch(team -> team.getSeed() != null)) {
+
+            throw new GroupAllocationException(
+                    "Team seeds have already been assigned for this tournament"
+            );
+        }
+
+        // Determine group configuration
         int groupCount;
         int teamsPerGroup;
 
         if (tournament.getMaxTeams() == 24) {
             groupCount = 8;
             teamsPerGroup = 3;
+
         } else if (tournament.getMaxTeams() == 16) {
             groupCount = 4;
             teamsPerGroup = 4;
+
         } else if (tournament.getMaxTeams() == 20) {
             groupCount = 4;
             teamsPerGroup = 5;
+
         } else {
             throw new GroupAllocationException(
                     "Unsupported tournament capacity"
             );
         }
 
+        // Create an independent list for random seeding
+        List<Team> seedOrder = new ArrayList<>(approvedTeams);
+
+        // Randomly assign seeds independently
+        Collections.shuffle(seedOrder);
+
+        for (int i = 0; i < seedOrder.size(); i++) {
+            seedOrder.get(i).setSeed(i + 1);
+        }
+
+        // Save permanent seeds
+        teamRepository.saveAll(seedOrder);
+
+        // Independently shuffle teams for group allocation
         Collections.shuffle(approvedTeams);
 
         List<GroupResponse> responses = new ArrayList<>();
 
         int teamIndex = 0;
 
+        // Generate tournament groups
         for (int i = 0; i < groupCount; i++) {
 
             String groupName = "Group " + (char) ('A' + i);
@@ -103,10 +138,12 @@ public class GroupService {
 
             List<GroupResponse.TeamInfo> teamInfos = new ArrayList<>();
 
+            // Allocate teams into each group
             for (int j = 0; j < teamsPerGroup; j++) {
 
                 Team team = approvedTeams.get(teamIndex++);
 
+                // Prevent duplicate team assignment
                 if (groupTeamRepository
                         .existsByTournamentGroup_Tournament_IdAndTeam_Id(
                                 tournamentId, team.getId())) {
@@ -140,6 +177,7 @@ public class GroupService {
     @Transactional(readOnly = true)
     public List<GroupResponse> getGroups(Long tournamentId) {
 
+        // Verify that the tournament exists
         if (!tournamentRepository.existsById(tournamentId)) {
             throw new TournamentNotFoundException(
                     "Tournament not found with ID: " + tournamentId

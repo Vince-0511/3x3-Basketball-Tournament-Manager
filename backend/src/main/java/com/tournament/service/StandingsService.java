@@ -4,8 +4,10 @@ package com.tournament.service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,13 +75,19 @@ public class StandingsService {
 
                 standingsMap.put(
                         team.getId(),
-                        new TeamStanding(team.getId(), team.getTeamName())
+                        new TeamStanding(
+                                team.getId(),
+                                team.getTeamName(),
+                                team.getSeed(),
+                                team.getCompetitionStatus()
+                        )
                 );
             }
 
             List<Fixture> fixtures =
                     fixtureRepository.findByTournamentGroup_Id(group.getId());
 
+            // Calculate match statistics
             for (Fixture fixture : fixtures) {
 
                 if (!"COMPLETED".equals(fixture.getResultStatus())) {
@@ -103,36 +111,252 @@ public class StandingsService {
                     continue;
                 }
 
-                standingA.recordMatch(scoreA, scoreB);
-                standingB.recordMatch(scoreB, scoreA);
+                Team winner = fixture.getWinner();
+
+                if (winner == null) {
+                    continue;
+                }
+
+                boolean teamAWon =
+                        winner.getId().equals(fixture.getTeamA().getId());
+
+                boolean teamBWon =
+                        winner.getId().equals(fixture.getTeamB().getId());
+
+                if (!teamAWon && !teamBWon) {
+                    continue;
+                }
+
+                String resultType = fixture.getResultType();
+
+                boolean includeAInAverage = true;
+                boolean includeBInAverage = true;
+
+                // Default competition points for a loss
+                int teamALossPoints = 1;
+                int teamBLossPoints = 1;
+
+                // FORFEIT AND NO_SHOW
+                if ("FORFEIT".equals(resultType)
+                        || "NO_SHOW".equals(resultType)) {
+
+                    Team forfeitingTeam = fixture.getForfeitingTeam();
+
+                    if (forfeitingTeam == null) {
+                        continue;
+                    }
+
+                    if (forfeitingTeam.getId().equals(
+                            fixture.getTeamA().getId())) {
+
+                        includeBInAverage = false;
+
+                        // Ordinary forfeit: zero competition points
+                        if ("FORFEIT".equals(resultType)) {
+                            teamALossPoints = 0;
+                        }
+
+                    } else if (forfeitingTeam.getId().equals(
+                            fixture.getTeamB().getId())) {
+
+                        includeAInAverage = false;
+
+                        // Ordinary forfeit: zero competition points
+                        if ("FORFEIT".equals(resultType)) {
+                            teamBLossPoints = 0;
+                        }
+
+                    } else {
+                        continue;
+                    }
+                }
+
+                // DEFAULT
+                else if ("DEFAULT".equals(resultType)) {
+
+                    Boolean winnerKeepsScore =
+                            fixture.getWinnerKeepsScore();
+
+                    if (winnerKeepsScore == null) {
+                        continue;
+                    }
+
+                    // Winner's score is excluded when
+                    // the winning team chooses forfeit treatment.
+                    if (teamAWon && !winnerKeepsScore) {
+                        includeAInAverage = false;
+                    }
+
+                    if (teamBWon && !winnerKeepsScore) {
+                        includeBInAverage = false;
+                    }
+                }
+
+                // NORMAL RESULT
+                else if (!"NORMAL".equals(resultType)) {
+                    continue;
+                }
+
+                // Update Team A standings
+                standingA.recordMatch(
+                        scoreA,
+                        scoreB,
+                        teamAWon,
+                        includeAInAverage,
+                        teamALossPoints
+                );
+
+                // Update Team B standings
+                standingB.recordMatch(
+                        scoreB,
+                        scoreA,
+                        teamBWon,
+                        includeBInAverage,
+                        teamBLossPoints
+                );
             }
 
             List<TeamStanding> standings =
                     new ArrayList<>(standingsMap.values());
 
+            // First: active teams before disqualified teams.
+            // Second: most wins.
             standings.sort(
                     Comparator.comparingInt(
-                            TeamStanding::getCompetitionPoints
-                    ).reversed()
-                    .thenComparing(
-                            Comparator.comparingInt(
-                                    TeamStanding::getPointDifference
-                            ).reversed()
+                            (TeamStanding team) ->
+                                    "DISQUALIFIED".equals(
+                                            team.getCompetitionStatus()
+                                    ) ? 1 : 0
                     )
                     .thenComparing(
                             Comparator.comparingInt(
-                                    TeamStanding::getPointsFor
+                                    TeamStanding::getWon
                             ).reversed()
                     )
-                    .thenComparing(TeamStanding::getTeamName)
             );
 
+            // Apply remaining FIBA tie-breakers.
+            List<TeamStanding> finalStandings = new ArrayList<>();
+
+            int index = 0;
+
+            while (index < standings.size()) {
+
+                TeamStanding first = standings.get(index);
+
+                boolean disqualified =
+                        "DISQUALIFIED".equals(
+                                first.getCompetitionStatus()
+                        );
+
+                int wins = first.getWon();
+
+                List<TeamStanding> tiedTeams = new ArrayList<>();
+
+                while (index < standings.size()) {
+
+                    TeamStanding current = standings.get(index);
+
+                    boolean currentDisqualified =
+                            "DISQUALIFIED".equals(
+                                    current.getCompetitionStatus()
+                            );
+
+                    if (currentDisqualified != disqualified
+                            || current.getWon() != wins) {
+                        break;
+                    }
+
+                    tiedTeams.add(current);
+                    index++;
+                }
+
+                if (!disqualified && tiedTeams.size() > 1) {
+
+                    // Head-to-head wins within the tied teams.
+                    Map<Long, Integer> headToHeadWins = new HashMap<>();
+
+                    Set<Long> tiedTeamIds = new HashSet<>();
+
+                    for (TeamStanding team : tiedTeams) {
+                        tiedTeamIds.add(team.getTeamId());
+                        headToHeadWins.put(team.getTeamId(), 0);
+                    }
+
+                    for (Fixture fixture : fixtures) {
+
+                        if (!"COMPLETED".equals(
+                                fixture.getResultStatus())) {
+                            continue;
+                        }
+
+                        if (!tiedTeamIds.contains(
+                                fixture.getTeamA().getId())
+                                || !tiedTeamIds.contains(
+                                        fixture.getTeamB().getId())) {
+                            continue;
+                        }
+
+                        Team winner = fixture.getWinner();
+
+                        if (winner != null) {
+                            headToHeadWins.merge(
+                                    winner.getId(),
+                                    1,
+                                    Integer::sum
+                            );
+                        }
+                    }
+
+                    tiedTeams.sort(
+                            Comparator.comparingInt(
+                                    (TeamStanding team) ->
+                                            headToHeadWins.getOrDefault(
+                                                    team.getTeamId(), 0
+                                            )
+                            ).reversed()
+                            .thenComparing(
+                                    Comparator.comparingDouble(
+                                            TeamStanding::getAveragePointsScored
+                                    ).reversed()
+                            )
+                            .thenComparing(
+                                    TeamStanding::getSeed,
+                                    Comparator.nullsLast(
+                                            Comparator.naturalOrder()
+                                    )
+                            )
+                            .thenComparing(TeamStanding::getTeamName)
+                    );
+
+                } else {
+
+                    // Average points and seeding for remaining ties.
+                    tiedTeams.sort(
+                            Comparator.comparingDouble(
+                                    TeamStanding::getAveragePointsScored
+                            ).reversed()
+                            .thenComparing(
+                                    TeamStanding::getSeed,
+                                    Comparator.nullsLast(
+                                            Comparator.naturalOrder()
+                                    )
+                            )
+                            .thenComparing(TeamStanding::getTeamName)
+                    );
+                }
+
+                finalStandings.addAll(tiedTeams);
+            }
+
             responses.add(
-                    new StandingsResponse(group.getGroupName(), standings)
+                    new StandingsResponse(
+                            group.getGroupName(),
+                            finalStandings
+                    )
             );
         }
 
         return responses;
     }
 }
-

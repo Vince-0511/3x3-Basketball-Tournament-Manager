@@ -28,17 +28,31 @@ public class StandingsResponse {
 
         private Long teamId;
         private String teamName;
+        private Integer seed;
+        private String competitionStatus;
+
         private int played;
         private int won;
         private int lost;
+
         private int pointsFor;
         private int pointsAgainst;
         private int pointDifference;
         private int competitionPoints;
 
-        public TeamStanding(Long teamId, String teamName) {
+        private int averagePointsTotal;
+        private int averageGames;
+
+        public TeamStanding(
+                Long teamId,
+                String teamName,
+                Integer seed,
+                String competitionStatus) {
+
             this.teamId = teamId;
             this.teamName = teamName;
+            this.seed = seed;
+            this.competitionStatus = competitionStatus;
         }
 
         public Long getTeamId() {
@@ -47,6 +61,14 @@ public class StandingsResponse {
 
         public String getTeamName() {
             return teamName;
+        }
+
+        public Integer getSeed() {
+            return seed;
+        }
+
+        public String getCompetitionStatus() {
+            return competitionStatus;
         }
 
         public int getPlayed() {
@@ -77,18 +99,48 @@ public class StandingsResponse {
             return competitionPoints;
         }
 
-        public void recordMatch(int scored, int conceded) {
+        public int getAveragePointsTotal() {
+            return averagePointsTotal;
+        }
+
+        public int getAverageGames() {
+            return averageGames;
+        }
+
+        public double getAveragePointsScored() {
+            if (averageGames == 0) {
+                return 0.0;
+            }
+
+            return (double) averagePointsTotal / averageGames;
+        }
+
+        public void recordMatch(
+                int scored,
+                int conceded,
+                boolean wonMatch,
+                boolean includeInAverage,
+                int lossPoints) {
+
             played++;
+
             pointsFor += scored;
             pointsAgainst += conceded;
+
             pointDifference = pointsFor - pointsAgainst;
 
-            if (scored > conceded) {
+            if (wonMatch) {
                 won++;
                 competitionPoints += 2;
             } else {
                 lost++;
-                competitionPoints += 1;
+                competitionPoints += lossPoints;
+            }
+
+            if (includeInAverage) {
+                // FIBA tie-break average is capped at 21 points
+                averagePointsTotal += Math.min(scored, 21);
+                averageGames++;
             }
         }
     }

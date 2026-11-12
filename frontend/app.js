@@ -67,6 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 await verifyMatchResult(fixtureId);
             }
         });
+
+    document.getElementById("resultsTableBody")
+        .addEventListener("change", (event) => {
+
+            if (event.target.matches(".result-type-select")) {
+                toggleResultFields(event.target);
+            }
+        });
+
 });
 
 
@@ -958,6 +967,7 @@ async function loadResults() {
 }
 
 // Display tournament match results
+
 function displayResults(results) {
     const resultsTableBody =
         document.getElementById("resultsTableBody");
@@ -977,24 +987,69 @@ function displayResults(results) {
             statusLabel = "NOT SUBMITTED";
 
             scoreHTML = `
-                <div class="result-score-container">
-                    <input
-                        type="number"
-                        min="0"
-                        class="result-score-input"
-                        id="teamAScore-${result.fixtureId}"
-                        placeholder="A"
-                    >
+                <div class="result-form">
 
-                    <span>-</span>
-
-                    <input
-                        type="number"
-                        min="0"
-                        class="result-score-input"
-                        id="teamBScore-${result.fixtureId}"
-                        placeholder="B"
+                    <select
+                        class="result-type-select"
+                        id="resultType-${result.fixtureId}"
                     >
+                        <option value="NORMAL">Normal</option>
+                        <option value="FORFEIT">Forfeit</option>
+                        <option value="NO_SHOW">No-show</option>
+                        <option value="DEFAULT">Default</option>
+                    </select>
+
+                    <div
+                        class="result-score-container"
+                        id="scoreContainer-${result.fixtureId}"
+                    >
+                        <input
+                            type="number"
+                            min="0"
+                            class="result-score-input"
+                            id="teamAScore-${result.fixtureId}"
+                            placeholder="A"
+                        >
+
+                        <span>-</span>
+
+                        <input
+                            type="number"
+                            min="0"
+                            class="result-score-input"
+                            id="teamBScore-${result.fixtureId}"
+                            placeholder="B"
+                        >
+                    </div>
+
+                    <div
+                        class="result-extra-fields"
+                        id="extraFields-${result.fixtureId}"
+                        hidden
+                    >
+                        <select
+                            id="forfeitingTeam-${result.fixtureId}"
+                        >
+                            <option value="">Select responsible team</option>
+
+                            <option value="${result.teamAId}">
+                                ${escapeHTML(result.teamAName)}
+                            </option>
+
+                            <option value="${result.teamBId}">
+                                ${escapeHTML(result.teamBName)}
+                            </option>
+                        </select>
+
+                        <select
+                            id="winnerKeepsScore-${result.fixtureId}"
+                            hidden
+                        >
+                            <option value="">Winner keeps score?</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
                 </div>
             `;
 
@@ -1005,7 +1060,7 @@ function displayResults(results) {
                     data-action="submit"
                     data-fixture-id="${result.fixtureId}"
                 >
-                    Submit Score
+                    Submit Result
                 </button>
             `;
 
@@ -1015,7 +1070,11 @@ function displayResults(results) {
             statusLabel = "PENDING VERIFICATION";
 
             scoreHTML = `
-                ${result.teamAScore} - ${result.teamBScore}
+                <strong>
+                    ${result.teamAScore} - ${result.teamBScore}
+                </strong>
+                <br>
+                <small>${escapeHTML(result.resultType || "NORMAL")}</small>
             `;
 
             actionHTML = `
@@ -1034,15 +1093,38 @@ function displayResults(results) {
             statusClass = "result-status-completed";
             statusLabel = "COMPLETED";
 
-            scoreHTML = `
-                <strong>
-                    ${result.teamAScore} - ${result.teamBScore}
-                </strong>
-            `;
+            if (
+                result.resultType === "FORFEIT" ||
+                result.resultType === "NO_SHOW"
+            ) {
+                scoreHTML = `
+                    <strong>
+                        ${escapeHTML(result.winnerName || "Winner")}
+                        (W–0)
+                    </strong>
+                    <br>
+                    <small>${escapeHTML(result.resultType)}</small>
+                `;
+            } else if (result.resultType === "DEFAULT") {
+                scoreHTML = `
+                    <strong>
+                        ${escapeHTML(result.winnerName || "Winner")}
+                    </strong>
+                    <br>
+                    <small>DEFAULT</small>
+                `;
+            } else {
+                scoreHTML = `
+                    <strong>
+                        ${result.teamAScore} - ${result.teamBScore}
+                    </strong>
+                `;
+            }
 
             actionHTML = `<span>Verified</span>`;
 
         } else {
+
             statusClass = "result-status-upcoming";
             statusLabel = escapeHTML(status);
             scoreHTML = "-";
@@ -1052,13 +1134,9 @@ function displayResults(results) {
         return `
             <tr>
                 <td>${result.fixtureId}</td>
-
                 <td>${escapeHTML(result.groupName)}</td>
-
                 <td>${escapeHTML(result.teamAName)}</td>
-
                 <td>${scoreHTML}</td>
-
                 <td>${escapeHTML(result.teamBName)}</td>
 
                 <td>
@@ -1074,47 +1152,134 @@ function displayResults(results) {
     }).join("");
 }
 
+
+function toggleResultFields(select) {
+
+    const fixtureId = select.id.split("-")[1];
+
+    const resultType = select.value;
+
+    const scoreContainer =
+        document.getElementById(`scoreContainer-${fixtureId}`);
+
+    const extraFields =
+        document.getElementById(`extraFields-${fixtureId}`);
+
+    const forfeitingTeam =
+        document.getElementById(`forfeitingTeam-${fixtureId}`);
+
+    const winnerKeepsScore =
+        document.getElementById(`winnerKeepsScore-${fixtureId}`);
+
+    const requiresResponsibleTeam =
+        ["FORFEIT", "NO_SHOW", "DEFAULT"].includes(resultType);
+
+    extraFields.hidden = !requiresResponsibleTeam;
+
+    scoreContainer.hidden =
+        resultType === "FORFEIT" ||
+        resultType === "NO_SHOW";
+
+    forfeitingTeam.required = requiresResponsibleTeam;
+
+    winnerKeepsScore.hidden = resultType !== "DEFAULT";
+    winnerKeepsScore.required = resultType === "DEFAULT";
+
+    if (resultType !== "DEFAULT") {
+        winnerKeepsScore.value = "";
+    }
+}
+
+
 // Submit a match result
+
 async function submitMatchResult(fixtureId) {
+
+    const message =
+        document.getElementById("resultsMessage");
+
+    const resultType =
+        document.getElementById(`resultType-${fixtureId}`).value;
+
     const teamAScoreInput =
         document.getElementById(`teamAScore-${fixtureId}`);
 
     const teamBScoreInput =
         document.getElementById(`teamBScore-${fixtureId}`);
 
-    const message =
-        document.getElementById("resultsMessage");
+    const forfeitingTeamInput =
+        document.getElementById(`forfeitingTeam-${fixtureId}`);
 
-    const teamAScore = Number(teamAScoreInput.value);
-    const teamBScore = Number(teamBScoreInput.value);
+    const winnerKeepsScoreInput =
+        document.getElementById(`winnerKeepsScore-${fixtureId}`);
 
-    // Validate scores
+    let teamAScore = 0;
+    let teamBScore = 0;
+
+    if (["NORMAL", "DEFAULT"].includes(resultType)) {
+
+        if (
+            teamAScoreInput.value.trim() === "" ||
+            teamBScoreInput.value.trim() === ""
+        ) {
+            message.textContent = "Please enter both team scores.";
+            message.style.color = "red";
+            return;
+        }
+
+        teamAScore = Number(teamAScoreInput.value);
+        teamBScore = Number(teamBScoreInput.value);
+
+        if (
+            !Number.isSafeInteger(teamAScore) ||
+            !Number.isSafeInteger(teamBScore) ||
+            teamAScore < 0 ||
+            teamBScore < 0
+        ) {
+            message.textContent =
+                "Scores must be non-negative whole numbers.";
+            message.style.color = "red";
+            return;
+        }
+    }
+
     if (
-        teamAScoreInput.value.trim() === "" ||
-        teamBScoreInput.value.trim() === ""
+        resultType === "NORMAL" &&
+        teamAScore === teamBScore
     ) {
-        message.textContent = "Please enter both team scores.";
+        message.textContent =
+            "Match scores cannot be tied.";
         message.style.color = "red";
         return;
     }
 
-    if (
-        !Number.isSafeInteger(teamAScore) ||
-        !Number.isSafeInteger(teamBScore) ||
-        teamAScore < 0 ||
-        teamBScore < 0
-    ) {
-        message.textContent =
-            "Scores must be non-negative whole numbers.";
-        message.style.color = "red";
-        return;
+    let forfeitingTeamId = null;
+    let winnerKeepsScore = null;
+
+    if (resultType !== "NORMAL") {
+
+        if (!forfeitingTeamInput.value) {
+            message.textContent =
+                "Please select the responsible team.";
+            message.style.color = "red";
+            return;
+        }
+
+        forfeitingTeamId =
+            Number(forfeitingTeamInput.value);
     }
 
-    if (teamAScore === teamBScore) {
-        message.textContent =
-            "Match scores cannot be tied. Please enter a winner.";
-        message.style.color = "red";
-        return;
+    if (resultType === "DEFAULT") {
+
+        if (winnerKeepsScoreInput.value === "") {
+            message.textContent =
+                "Please specify whether the winner keeps the score.";
+            message.style.color = "red";
+            return;
+        }
+
+        winnerKeepsScore =
+            winnerKeepsScoreInput.value === "true";
     }
 
     const button = document.querySelector(
@@ -1127,6 +1292,7 @@ async function submitMatchResult(fixtureId) {
     }
 
     try {
+
         const response = await fetch(
             `http://localhost:8080/api/fixtures/${fixtureId}/result`,
             {
@@ -1135,28 +1301,35 @@ async function submitMatchResult(fixtureId) {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    teamAScore: teamAScore,
-                    teamBScore: teamBScore
+                    teamAScore,
+                    teamBScore,
+                    resultType,
+                    forfeitingTeamId,
+                    winnerKeepsScore
                 })
             }
         );
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+
+            const errorData =
+                await response.json().catch(() => ({}));
 
             throw new Error(
-                errorData.error || "Failed to submit match result."
+                errorData.error ||
+                "Failed to submit match result."
             );
         }
 
         await loadResults();
 
         message.textContent =
-            `Fixture #${fixtureId} score submitted. Awaiting verification.`;
+            `Fixture #${fixtureId} submitted successfully. Awaiting verification.`;
 
         message.style.color = "green";
 
     } catch (error) {
+
         console.error("Error submitting match result:", error);
 
         message.textContent = error.message;
@@ -1164,10 +1337,11 @@ async function submitMatchResult(fixtureId) {
 
         if (button) {
             button.disabled = false;
-            button.textContent = "Submit Score";
+            button.textContent = "Submit Result";
         }
     }
 }
+
 
 // Verify a submitted match result
 async function verifyMatchResult(fixtureId) {

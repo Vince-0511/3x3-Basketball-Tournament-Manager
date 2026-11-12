@@ -1,4 +1,5 @@
 
+
 package com.tournament.model;
 
 import java.time.LocalDateTime;
@@ -54,6 +55,19 @@ public class Fixture {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "winner_id")
     private Team winner;
+
+    // Result classification: NORMAL, FORFEIT or DEFAULT
+    @Column(nullable = false, length = 20)
+    private String resultType = "NORMAL";
+
+    // Team responsible for the forfeit or default
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "forfeiting_team_id")
+    private Team forfeitingTeam;
+
+    // Whether the winner retains the actual score in a default
+    @Column
+    private Boolean winnerKeepsScore;
 
     public Fixture() {
     }
@@ -140,5 +154,29 @@ public class Fixture {
 
     public void setWinner(Team winner) {
         this.winner = winner;
+    }
+
+    public String getResultType() {
+        return resultType;
+    }
+
+    public void setResultType(String resultType) {
+        this.resultType = resultType;
+    }
+
+    public Team getForfeitingTeam() {
+        return forfeitingTeam;
+    }
+
+    public void setForfeitingTeam(Team forfeitingTeam) {
+        this.forfeitingTeam = forfeitingTeam;
+    }
+
+    public Boolean getWinnerKeepsScore() {
+        return winnerKeepsScore;
+    }
+
+    public void setWinnerKeepsScore(Boolean winnerKeepsScore) {
+        this.winnerKeepsScore = winnerKeepsScore;
     }
 }

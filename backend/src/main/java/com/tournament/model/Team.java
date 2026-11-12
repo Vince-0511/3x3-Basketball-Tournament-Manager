@@ -16,7 +16,6 @@ import jakarta.validation.constraints.NotBlank;
 @Table(name = "teams")
 public class Team {
 
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,15 +38,25 @@ public class Team {
 
     private String status = "PENDING";
 
+    // Tournament seeding
+    @Column
+    private Integer seed;
+
+    // Number of forfeits recorded
+    @Column(nullable = false)
+    private Integer forfeitCount = 0;
+
+    // Competition eligibility
+    @Column(nullable = false)
+    private String competitionStatus = "ACTIVE";
+
+    // Tournament relationship
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tournament_id", nullable = true)
     private Tournament tournament;
 
-
     public Team() {
     }
-
-    // Getters and setters
 
     public Long getId() {
         return id;
@@ -93,6 +102,30 @@ public class Team {
         this.status = status;
     }
 
+    public Integer getSeed() {
+        return seed;
+    }
+
+    public void setSeed(Integer seed) {
+        this.seed = seed;
+    }
+
+    public Integer getForfeitCount() {
+        return forfeitCount;
+    }
+
+    public void setForfeitCount(Integer forfeitCount) {
+        this.forfeitCount = forfeitCount;
+    }
+
+    public String getCompetitionStatus() {
+        return competitionStatus;
+    }
+
+    public void setCompetitionStatus(String competitionStatus) {
+        this.competitionStatus = competitionStatus;
+    }
+
     public Tournament getTournament() {
         return tournament;
     }
@@ -101,4 +134,3 @@ public class Team {
         this.tournament = tournament;
     }
 }
-    
