@@ -2,6 +2,7 @@
 package com.tournament.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class TeamRequest {
@@ -21,6 +22,9 @@ public class TeamRequest {
     @NotBlank(message = "Player 3 name is required")
     @Size(max = 100, message = "Player 3 name cannot exceed 100 characters")
     private String player3Name;
+
+    @NotNull(message = "Tournament ID is required")
+    private Long tournamentId;
 
     public String getTeamName() {
         return teamName;
@@ -52,5 +56,13 @@ public class TeamRequest {
 
     public void setPlayer3Name(String player3Name) {
         this.player3Name = player3Name;
+    }
+
+    public Long getTournamentId() {
+        return tournamentId;
+    }
+
+    public void setTournamentId(Long tournamentId) {
+        this.tournamentId = tournamentId;
     }
 }

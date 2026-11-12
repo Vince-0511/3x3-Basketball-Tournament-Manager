@@ -1,8 +1,8 @@
-
 package com.tournament.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tournament.dto.TeamRequest;
+import com.tournament.dto.TeamResponse;
 import com.tournament.dto.TeamStatusRequest;
-import com.tournament.model.Team;
 import com.tournament.service.TeamService;
 
 import jakarta.validation.Valid;
@@ -33,33 +34,37 @@ public class TeamController {
 
     // Register a new team
     @PostMapping
-    public Team registerTeam(@Valid @RequestBody TeamRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public TeamResponse registerTeam(
+            @Valid @RequestBody TeamRequest request) {
+
         return teamService.registerTeam(request);
     }
 
     // Retrieve all teams
     @GetMapping
-    public List<Team> getAllTeams() {
+    public List<TeamResponse> getAllTeams() {
         return teamService.getAllTeams();
     }
 
-
+    // Update team status
     @PatchMapping("/{id}/status")
-    public Team updateTeamStatus(
+    public TeamResponse updateTeamStatus(
             @PathVariable Long id,
             @Valid @RequestBody TeamStatusRequest request) {
 
         return teamService.updateTeamStatus(id, request.getStatus());
     }
 
+    // Retrieve team by ID
     @GetMapping("/{id}")
-    public Team getTeamById(@PathVariable Long id) {
+    public TeamResponse getTeamById(@PathVariable Long id) {
         return teamService.getTeamById(id);
     }
 
+    // Delete team
     @DeleteMapping("/{id}")
     public void deleteTeam(@PathVariable Long id) {
         teamService.deleteTeam(id);
     }
-
 }

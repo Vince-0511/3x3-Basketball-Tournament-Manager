@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tournament.dto.TeamResponse;
 import com.tournament.dto.TournamentRequest;
 import com.tournament.model.Tournament;
+import com.tournament.service.TeamService;
 import com.tournament.service.TournamentService;
 
 import jakarta.validation.Valid;
@@ -25,9 +27,14 @@ import jakarta.validation.Valid;
 public class TournamentController {
 
     private final TournamentService tournamentService;
+    private final TeamService teamService;
 
-    public TournamentController(TournamentService tournamentService) {
+    public TournamentController(
+            TournamentService tournamentService,
+            TeamService teamService) {
+
         this.tournamentService = tournamentService;
+        this.teamService = teamService;
     }
 
     // Create a tournament
@@ -48,5 +55,13 @@ public class TournamentController {
     @GetMapping("/{id}")
     public Tournament getTournamentById(@PathVariable Long id) {
         return tournamentService.getTournamentById(id);
+    }
+
+    // Get teams belonging to a tournament
+    @GetMapping("/{id}/teams")
+    public List<TeamResponse> getTeamsByTournament(
+            @PathVariable Long id) {
+
+        return teamService.getTeamsByTournament(id);
     }
 }

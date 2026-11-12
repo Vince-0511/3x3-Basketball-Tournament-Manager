@@ -3,9 +3,12 @@ package com.tournament.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
@@ -19,7 +22,7 @@ public class Team {
     private Long id;
 
     @NotBlank(message = "Team name is required")
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String teamName;
 
     @NotBlank(message = "Player 1 name is required")
@@ -35,6 +38,10 @@ public class Team {
     private String player3Name;
 
     private String status = "PENDING";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tournament_id", nullable = true)
+    private Tournament tournament;
 
 
     public Team() {
@@ -84,6 +91,14 @@ public class Team {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
     }
 }
     
