@@ -106,4 +106,16 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(FixtureGenerationException.class)
+    public ResponseEntity<Map<String, String>> handleFixtureGeneration(
+            FixtureGenerationException exception) {
+
+        Map<String, String> response =
+                Map.of("error", exception.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
 }

@@ -19,7 +19,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("refreshGroupsButton")
         .addEventListener("click", loadGroups);
+
+        document.getElementById("fixtureTournamentSelect")
+        .addEventListener("change", loadFixtures);
+
+    document.getElementById("generateFixturesButton")
+        .addEventListener("click", generateFixtures);
+
+    document.getElementById("refreshFixturesButton")
+        .addEventListener("click", loadFixtures);
 });
+
 
 
 // Get teams from the backend
@@ -230,6 +240,7 @@ async function loadTournaments() {
 
         displayTournaments(tournaments);
         populateGroupTournamentSelect(tournaments);
+        populateFixtureTournamentSelect(tournaments);
 
     } catch (error) {
         console.error("Error loading tournaments:", error);
@@ -258,6 +269,28 @@ function populateGroupTournamentSelect(tournaments) {
 
     if (tournaments.length === 0) {
         select.innerHTML = '<option value="">No tournaments available</option>';
+    }
+}
+
+
+function populateFixtureTournamentSelect(tournaments) {
+    const select = document.getElementById("fixtureTournamentSelect");
+
+    select.innerHTML = '<option value="">Select a tournament</option>';
+
+    tournaments.forEach(tournament => {
+        const option = document.createElement("option");
+
+        option.value = tournament.id;
+        option.textContent =
+            `${tournament.tournamentName} (${tournament.maxTeams} teams)`;
+
+        select.appendChild(option);
+    });
+
+    if (tournaments.length === 0) {
+        select.innerHTML =
+            '<option value="">No tournaments available</option>';
     }
 }
 
@@ -484,4 +517,178 @@ async function generateGroups() {
         groupMessage.style.color = "red";
     }
 
+}
+
+
+async function loadFixtures() {
+    const tournamentId =
+        document.getElementById("fixtureTournamentSelect").value;
+
+    const tableBody = document.getElementById("fixtureTableBody");
+    const message = document.getElementById("fixtureMessage");
+    const generateButton =
+        document.getElementById("generateFixturesButton");
+
+    message.textContent = "";
+    generateButton.disabled = true;
+
+    if (!tournamentId) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7">Select a tournament to view fixtures.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="7">Loading fixtures...</td>
+        </tr>
+    `;
+
+    try {
+        const response = await fetch(
+            `${TOURNAMENT_API_URL}/${tournamentId}/fixtures`
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve fixtures.");
+        }
+
+        const fixtures = await response.json();
+
+        if (fixtures.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7">No fixtures generated yet.</td>
+                </tr>
+            `;
+
+            message.textContent = "Ready to generate fixtures.";
+            message.style.color = "#64748b";
+            generateButton.disabled = false;
+            return;
+        }
+
+        displayFixtures(fixtures);
+
+        message.textContent =
+            `${fixtures.length} fixtures have been generated.`;
+
+        message.style.color = "green";
+        generateButton.disabled = true;
+
+    } catch (error) {
+        console.error("Error loading fixtures:", error);
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7">Unable to load fixtures.</td>
+            </tr>
+        `;
+
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+}
+
+
+function displayFixtures(fixtures) {
+    const tableBody = document.getElementById("fixtureTableBody");
+
+    if (fixtures.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7">No fixtures available.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = fixtures.map(fixture => {
+        const matchDate = new Date(fixture.matchDateTime);
+
+        const formattedDate = matchDate.toLocaleDateString();
+        const formattedTime = matchDate.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+        return `
+            <tr>
+                <td>${fixture.id}</td>
+                <td>${escapeHTML(fixture.groupName)}</td>
+                <td>${escapeHTML(fixture.teamAName)}</td>
+                <td>${escapeHTML(fixture.teamBName)}</td>
+                <td>${formattedDate} ${formattedTime}</td>
+                <td>Court ${fixture.courtNumber}</td>
+                <td>
+                    <span class="status-badge pending">
+                        ${escapeHTML(fixture.status)}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+
+async function generateFixtures() {
+    const tournamentId =
+        document.getElementById("fixtureTournamentSelect").value;
+
+    const message = document.getElementById("fixtureMessage");
+    const generateButton =
+        document.getElementById("generateFixturesButton");
+
+    if (!tournamentId) {
+        message.textContent = "Please select a tournament first.";
+        message.style.color = "red";
+        return;
+    }
+
+    const confirmed = confirm(
+        "Are you sure you want to generate fixtures? This action cannot be undone."
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    generateButton.disabled = true;
+    message.textContent = "Generating fixtures...";
+    message.style.color = "#64748b";
+
+    try {
+        const response = await fetch(
+            `${TOURNAMENT_API_URL}/${tournamentId}/fixtures/generate`,
+            {
+                method: "POST"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Failed to generate fixtures.");
+        }
+
+        displayFixtures(result);
+
+        message.textContent =
+            `Successfully generated ${result.length} fixtures!`;
+
+        message.style.color = "green";
+
+        generateButton.disabled = true;
+
+    } catch (error) {
+        console.error("Error generating fixtures:", error);
+
+        await loadFixtures();
+
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
 }

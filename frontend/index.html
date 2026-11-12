@@ -169,6 +169,68 @@
                 </div>
             </section>
 
+
+            <!-- Fixture Management -->
+            <section class="fixture-section" id="fixtureManagement">
+                <div class="section-header">
+                    <div>
+                        <h2>Fixture Management</h2>
+                        <p>Generate and manage tournament match schedules.</p>
+                    </div>
+                </div>
+
+                <div class="fixture-management-container">
+
+                    <div class="form-group">
+                        <label for="fixtureTournamentSelect">
+                            Select Tournament
+                        </label>
+
+                        <select id="fixtureTournamentSelect">
+                            <option value="">Loading tournaments...</option>
+                        </select>
+                    </div>
+
+                    <div class="fixture-actions">
+                        <button type="button" id="generateFixturesButton">
+                            Generate Fixtures
+                        </button>
+
+                        <button type="button" id="refreshFixturesButton">
+                            Refresh Fixtures
+                        </button>
+                    </div>
+
+                    <p id="fixtureMessage"></p>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Match ID</th>
+                                    <th>Group</th>
+                                    <th>Team A</th>
+                                    <th>Team B</th>
+                                    <th>Date & Time</th>
+                                    <th>Court</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="fixtureTableBody">
+                                <tr>
+                                    <td colspan="7">
+                                        Select a tournament to view fixtures.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </section>
+
+
             <!-- Tournament Overview -->
             <section class="overview">
                 <h2>Tournament Overview</h2>
