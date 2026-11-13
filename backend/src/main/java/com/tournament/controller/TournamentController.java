@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -42,19 +43,32 @@ public class TournamentController {
     @ResponseStatus(HttpStatus.CREATED)
     public Tournament createTournament(
             @Valid @RequestBody TournamentRequest request) {
+
         return tournamentService.createTournament(request);
     }
 
     // Get all tournaments
     @GetMapping
     public List<Tournament> getAllTournaments() {
+
         return tournamentService.getAllTournaments();
     }
 
     // Get a tournament by ID
     @GetMapping("/{id}")
-    public Tournament getTournamentById(@PathVariable Long id) {
+    public Tournament getTournamentById(
+            @PathVariable Long id) {
+
         return tournamentService.getTournamentById(id);
+    }
+
+    // Update an existing tournament
+    @PutMapping("/{id}")
+    public Tournament updateTournament(
+            @PathVariable Long id,
+            @Valid @RequestBody TournamentRequest request) {
+
+        return tournamentService.updateTournament(id, request);
     }
 
     // Get teams belonging to a tournament

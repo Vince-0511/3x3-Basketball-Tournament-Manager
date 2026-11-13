@@ -86,7 +86,7 @@
 
                 <!-- Create Tournament Form -->
                 <div class="tournament-form-container">
-                    <h3>Create New Tournament</h3>
+                    <h3 id="tournamentFormTitle">Create New Tournament</h3>
 
                     <form id="tournamentForm">
                         <div class="form-grid">
@@ -143,7 +143,20 @@
                             </div>
                         </div>
 
-                        <button type="submit">Create Tournament</button>
+                        <div class="tournament-form-actions">
+                            <button type="submit" id="tournamentSubmitButton">
+                                Create Tournament
+                            </button>
+
+                            <button
+                                type="button"
+                                id="cancelTournamentEditButton"
+                                hidden
+                            >
+                                Cancel
+                            </button>
+                        </div>
+
                         <p id="tournamentMessage"></p>
                     </form>
                 </div>

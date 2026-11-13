@@ -1,6 +1,6 @@
 const API_URL = "http://localhost:8080/api/teams";
 const TOURNAMENT_API_URL = "http://localhost:8080/api/tournaments";
-
+let editingTournamentId = null;
 // Load teams when the page opens
 
 // Load dashboard data when the page opens
@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("tournamentForm")
         .addEventListener("submit", createTournament);
+
+    document.getElementById("cancelTournamentEditButton")
+        .addEventListener("click", cancelTournamentEdit);
 
     document.getElementById("groupTournamentSelect")
         .addEventListener("change", loadGroups);
@@ -346,6 +349,8 @@ function populateFixtureTournamentSelect(tournaments) {
 
 
 // Display tournaments
+
+// Display tournaments
 function displayTournaments(tournaments) {
     const tournamentList = document.getElementById("tournamentList");
 
@@ -377,12 +382,103 @@ function displayTournaments(tournaments) {
             <p><strong>Number of Courts:</strong>
                 ${tournament.courtCount}
             </p>
+
+            <button
+                type="button"
+                onclick="editTournament(${Number(tournament.id)})">
+                Edit Tournament
+            </button>
         </div>
     `).join("");
 }
 
 
+// Edit an existing tournament
+async function editTournament(tournamentId) {
+    const message = document.getElementById("tournamentMessage");
+
+    try {
+        const response = await fetch(
+            `${TOURNAMENT_API_URL}/${tournamentId}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve tournament details.");
+        }
+
+        const tournament = await response.json();
+
+        editingTournamentId = tournament.id;
+
+        document.getElementById("tournamentName").value =
+            tournament.tournamentName;
+
+        document.getElementById("venue").value =
+            tournament.venue || "";
+
+        document.getElementById("startDate").value =
+            tournament.startDate || "";
+
+        document.getElementById("endDate").value =
+            tournament.endDate || "";
+
+        document.getElementById("maxTeams").value =
+            tournament.maxTeams;
+
+        document.getElementById("courtCount").value =
+            tournament.courtCount;
+
+        document.getElementById("tournamentFormTitle").textContent =
+            "Edit Tournament";
+
+        document.getElementById("tournamentSubmitButton").textContent =
+            "Save Changes";
+
+        document.getElementById("cancelTournamentEditButton").hidden =
+            false;
+
+        message.textContent =
+            `Editing tournament: ${tournament.tournamentName}`;
+
+        message.style.color = "#2563eb";
+
+        document.getElementById("tournamentForm").scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+    } catch (error) {
+        console.error("Error loading tournament:", error);
+        message.textContent = error.message;
+        message.style.color = "red";
+    }
+}
+
+
+// Cancel tournament editing
+function cancelTournamentEdit() {
+    editingTournamentId = null;
+
+    document.getElementById("tournamentForm").reset();
+
+    document.getElementById("tournamentFormTitle").textContent =
+        "Create New Tournament";
+
+    document.getElementById("tournamentSubmitButton").textContent =
+        "Create Tournament";
+
+    document.getElementById("cancelTournamentEditButton").hidden =
+        true;
+
+    const message = document.getElementById("tournamentMessage");
+
+    message.textContent = "";
+}
+
+
+
 // Create a tournament
+
 async function createTournament(event) {
     event.preventDefault();
 
@@ -397,18 +493,29 @@ async function createTournament(event) {
 
     const message = document.getElementById("tournamentMessage");
 
+    // Validate tournament dates
     if (
         tournamentData.startDate &&
         tournamentData.endDate &&
         tournamentData.endDate < tournamentData.startDate
     ) {
         message.textContent = "End date cannot be before start date.";
+        message.style.color = "red";
         return;
     }
 
+    // Determine whether creating or updating
+    const isEditing = editingTournamentId !== null;
+
+    const url = isEditing
+        ? `${TOURNAMENT_API_URL}/${editingTournamentId}`
+        : TOURNAMENT_API_URL;
+
+    const method = isEditing ? "PUT" : "POST";
+
     try {
-        const response = await fetch(TOURNAMENT_API_URL, {
-            method: "POST",
+        const response = await fetch(url, {
+            method: method,
             headers: {
                 "Content-Type": "application/json"
             },
@@ -418,24 +525,48 @@ async function createTournament(event) {
         const result = await response.json();
 
         if (!response.ok) {
-            const errorMessage = Object.values(result).join(", ");
-            throw new Error(errorMessage || "Failed to create tournament");
+            const errorMessage =
+                result.error || Object.values(result).join(", ");
+
+            throw new Error(
+                errorMessage || "Failed to save tournament."
+            );
         }
 
-        message.textContent = "Tournament created successfully!";
+        // Display success message
+        message.textContent = isEditing
+            ? "Tournament updated successfully!"
+            : "Tournament created successfully!";
+
         message.style.color = "green";
+
+        // Reset editing state
+        editingTournamentId = null;
 
         document.getElementById("tournamentForm").reset();
 
+        document.getElementById("tournamentFormTitle").textContent =
+            "Create New Tournament";
+
+        document.getElementById("tournamentSubmitButton").textContent =
+            "Create Tournament";
+
+        document.getElementById("cancelTournamentEditButton").hidden =
+            true;
+
+        // Refresh tournament list
         await loadTournaments();
 
     } catch (error) {
-        console.error("Error creating tournament:", error);
+        console.error("Error saving tournament:", error);
 
-        message.textContent = error.message || "Unable to create tournament.";
+        message.textContent =
+            error.message || "Unable to save tournament.";
+
         message.style.color = "red";
     }
 }
+
 
 
 // Load groups for the selected tournament
